@@ -39,5 +39,6 @@ export async function updateSession(request: NextRequest) {
 
   await supabase.auth.getClaims()
 
+  supabaseResponse.headers.set("Cache-Control", "private, no-store, max-age=0")
   return supabaseResponse
 }
