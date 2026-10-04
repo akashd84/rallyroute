@@ -59,7 +59,7 @@ test("mocked: invite survives sign-in, explicit acceptance links adult, Member b
   await recipient.goto(link); await expect(recipient).toHaveURL(/\/sign-in$/);
   const cookie = (await recipientContext.cookies()).find(c => c.name === "rallyroute-household-invite");
   expect(cookie?.httpOnly).toBe(true);
-  expect(cookie?.value).toBe(createHash("sha256").update(link.split("#")[1]).digest("hex"));
+  expect(cookie?.value).toBe(createHash("sha256").update(link.split("=")[1]).digest("hex"));
   expect(recipient.url()).not.toContain("#");
   await login(recipient, "recipient@example.com", /\/household-invitations\/accept$/);
   await expect(recipient.getByRole("button", { name: "Accept invitation" })).toBeVisible();
@@ -87,8 +87,8 @@ test("mocked: revoked invitation rejects without joining; last departure protect
   await page.getByRole("button", { name: "Revoke invitation" }).click();
   const context = await browser.newContext(); const recipient = await context.newPage();
   await recipient.goto(link); await expect(recipient).toHaveURL(/\/sign-in$/); await login(recipient, "recipient@example.com", /\/household-invitations\/accept$/);
-  await recipient.getByRole("button", { name: "Accept invitation" }).click();
-  await expect(recipient.getByRole("status")).toContainText("invited email");
+  await expect(recipient.locator("main").getByRole("alert")).toContainText("invited email");
+  await expect(recipient.getByRole("button", { name: "Accept invitation" })).toHaveCount(0);
   page.once("dialog", dialog => dialog.accept()); await page.getByRole("button", { name: "Leave household" }).click();
   await expect(page).toHaveURL(/\/onboarding$/);
   await page.goto(householdUrl); await expect(page.getByRole("heading", { name: "Household unavailable" })).toBeVisible();

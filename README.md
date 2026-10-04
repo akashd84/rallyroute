@@ -9,7 +9,7 @@ Carpool matching within trusted groups. Next.js App Router, TypeScript, Tailwind
 3. Configure Supabase Auth as described in [authentication setup and verification](docs/authentication.md).
 4. Run `pnpm dev` and open your development origin (localhost:3000 for local access).
 
-Routes: `/` chooses the sign-in or account page; `/sign-in` requests and verifies email codes; `/account` validates identity server-side and reads only the caller's profile through RLS. Google OAuth and household onboarding are deferred.
+Routes: `/` chooses the sign-in or account page; `/sign-in` requests and verifies email codes; `/account` validates identity server-side and reads only the caller's profile through RLS. Household onboarding and invite-only groups are available; Google OAuth remains deferred.
 
 ## Checks
 
@@ -30,3 +30,7 @@ Database migrations are the schema source of truth. Follow `AGENTS.md` for datab
 See [database testing](docs/database-testing.md) for fictional seed identities, Docker prerequisites, local reset commands, and the real-role pgTAP suites. Run `pnpm test:db` separately from application tests; fixtures are never seeded into Cloud.
 
 Household onboarding, ownership rules, invitation setup, and verification: [docs/household-onboarding.md](docs/household-onboarding.md).
+
+Group creation, joining, permissions, invitations, and verification: [docs/group-onboarding.md](docs/group-onboarding.md).
+
+Six-character invitation codes, short links, attempt limits, legacy-link compatibility, and manual verification: [docs/invitation-codes.md](docs/invitation-codes.md).

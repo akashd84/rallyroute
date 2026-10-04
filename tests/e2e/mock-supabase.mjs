@@ -5,6 +5,8 @@ const defaultId = "11111111-1111-4111-8111-111111111111";
 const defaultHousehold = "33333333-3333-4333-8333-333333333333";
 const hashId = email => { const h = createHash("sha256").update(email).digest("hex"); return `${h.slice(0,8)}-${h.slice(8,12)}-4${h.slice(13,16)}-8${h.slice(17,20)}-${h.slice(20,32)}`; };
 const idFor = email => ["new@example.com", "recipient@example.com", "outsider@example.com"].includes(email) ? hashId(email) : defaultId;
+const budgets = new Map();
+const groups = new Map(); const groupAdmins = []; const memberships = []; const groupInvites = []; const groupRequests = new Map();
 const houses = new Map(); const people = []; const access = []; const invites = []; const requests = new Map();
 function setup(email) {
  const id = idFor(email);
@@ -56,11 +58,21 @@ const server = http.createServer(async (req, res) => {
     if (claims.email === "signout-error@example.com") return send(422, { code: "unexpected_failure", msg: "private error" });
     return send(200, {});
   }
-  if (url.pathname === "/test/reset" && req.method === "POST") { houses.clear(); people.splice(0); access.splice(0); invites.splice(0); requests.clear(); return send(200, {}); }
+  if (url.pathname === "/test/reset" && req.method === "POST") { budgets.clear(); groups.clear(); groupAdmins.splice(0); memberships.splice(0); groupInvites.splice(0); groupRequests.clear(); houses.clear(); people.splice(0); access.splice(0); invites.splice(0); requests.clear(); return send(200, {}); }
+  if (url.pathname === "/test/budget" && req.method === "POST") { budgets.set(idFor(body.email), { minute: Date.now(), hour: Date.now(), minuteCount: body.minuteCount ?? 0, hourCount: body.hourCount ?? 0 }); return send(200, {}); }
+  if (url.pathname === "/test/legacy" && req.method === "POST") {
+    const hash = createHash("sha256").update(body.token).digest("hex");
+    if (body.kind === "household") invites.push({ id: randomUUID(), household_id: defaultHousehold, invited_email: "recipient@example.com", token_hash: hash, participant_id: null, expires_at: new Date(Date.now() + 86400000).toISOString(), consumed_at: null, revoked_at: null });
+    else groupInvites.push({ id: randomUUID(), group_id: body.groupId, invite_type: "group_link", invited_email: null, token_hash: hash, status: "active", max_uses: null, use_count: 0, expires_at: new Date(Date.now() + 86400000).toISOString() });
+    return send(200, {});
+  }
   if (url.pathname.startsWith("/rest/v1/")) {
     const claims = JSON.parse(Buffer.from(req.headers.authorization.split(" ")[1].split(".")[1], "base64url"));
     const email = claims.email; const id = setup(email);
     const ownHouses = () => access.filter(a => a.user_id === id).map(a => a.household_id);
+    const isAdmin = gid => groupAdmins.some(a => a.group_id === gid && a.user_id === id);
+    const visible = gid => isAdmin(gid) || memberships.some(m => m.group_id === gid && m.status === "active" && ownHouses().includes(m.household_id));
+    const manages = hid => access.some(a => a.household_id === hid && a.user_id === id && ["owner", "admin"].includes(a.role)) && !houses.get(hid)?.archived_at;
     const table = url.pathname.slice("/rest/v1/".length);
     const filter = (rows) => rows.filter(row => [...url.searchParams].every(([key, value]) => {
       if (["select", "order", "limit"].includes(key)) return true;
@@ -68,6 +80,17 @@ const server = http.createServer(async (req, res) => {
       if (value.startsWith("eq.")) return String(row[key]) === value.slice(3);
       return true;
     }));
+    if (table === "groups") {
+      let rows = filter([...groups.values()].filter(g => visible(g.id)));
+      if (req.method === "PATCH") { rows = rows.filter(g => isAdmin(g.id)); rows.forEach(g => Object.assign(g, body)); }
+      return send(200, req.headers.accept?.includes("vnd.pgrst.object") ? rows[0] ?? null : rows);
+    }
+    if (table === "group_admins") return send(200, filter(groupAdmins.filter(a => isAdmin(a.group_id))));
+    if (table === "group_memberships") {
+      const rows = filter(memberships.filter(m => visible(m.group_id)));
+      return send(200, req.headers.accept?.includes("vnd.pgrst.object") ? rows[0] ?? null : rows);
+    }
+    if (table === "group_invitations") return send(200, filter(groupInvites.filter(i => isAdmin(i.group_id))).map(({ token_hash, ...metadata }) => { void token_hash; return metadata; }));
     if (table === "profiles") return send(200, email === "missing@example.com" ? null : { id, first_name: "Alex", last_name: "Example", onboarding_completed_at: null });
     if (table === "households") {
       const rows = filter([...houses.values()].filter(h => ownHouses().includes(h.id) && !h.archived_at));
@@ -89,6 +112,52 @@ const server = http.createServer(async (req, res) => {
     if (table.startsWith("rpc/")) {
       const rpc = table.slice(4); const hid = body.p_household_id;
       const denied = () => send(400, { code: "22023", message: "private database details" });
+      if (rpc === "create_group_once") {
+        if (!manages(hid)) return denied();
+        if (body.p_name === "Provider unavailable") return send(503, { code: "unexpected", message: "private details" });
+        if (body.p_name === "Slow group") await new Promise(resolve => setTimeout(resolve, 1000));
+        const key = id + body.p_request_id; if (groupRequests.has(key)) return send(200, groupRequests.get(key));
+        const gid = randomUUID(); groupRequests.set(key, gid);
+        groups.set(gid, { id: gid, name: body.p_name, group_type: body.p_group_type, description: body.p_description || null });
+        groupAdmins.push({ group_id: gid, user_id: id, role: "owner" }); memberships.push({ id: randomUUID(), group_id: gid, household_id: hid, status: "active" });
+        return send(200, gid);
+      }
+      if (rpc === "create_group_invitation") {
+        if (!isAdmin(body.p_group_id)) return denied();
+        const inv = { id: randomUUID(), group_id: body.p_group_id, invite_type: body.p_invite_type, invited_email: body.p_invited_email?.toLowerCase() ?? null, token_hash: body.p_token_hash, status: "active", max_uses: body.p_invite_type === "direct" ? 1 : body.p_max_uses ?? null, use_count: 0, created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 7 * 86400000).toISOString() }; groupInvites.push(inv); return send(200, inv.id);
+      }
+      if (["preview_group_invitation", "redeem_group_invitation", "accept_household_invitation"].includes(rpc)) return send(403, { code: "42501", message: "permission denied" });
+      if (rpc === "inspect_invitation" || rpc === "accept_invitation") {
+        const now = Date.now(); const budget = budgets.get(id) ?? { minute: now, hour: now, minuteCount: 0, hourCount: 0 };
+        if (now - budget.minute >= 60000) { budget.minute = now; budget.minuteCount = 0; }
+        if (now - budget.hour >= 3600000) { budget.hour = now; budget.hourCount = 0; }
+        budgets.set(id, budget);
+        const retry = Math.max(budget.minuteCount >= 10 ? Math.ceil((budget.minute + 60000 - now) / 1000) : 0, budget.hourCount >= 50 ? Math.ceil((budget.hour + 3600000 - now) / 1000) : 0);
+        if (retry) return send(200, { status: "throttled", retry_after_seconds: retry });
+        budget.minuteCount++; budget.hourCount++;
+        const invalid = () => send(200, { status: "invalid" });
+        if (body.p_kind === "group") {
+          const inv = groupInvites.find(i => i.token_hash === body.p_token_hash);
+          if (!inv || inv.status !== "active" || new Date(inv.expires_at) <= new Date() || (inv.max_uses != null && inv.use_count >= inv.max_uses) || (inv.invite_type === "direct" && inv.invited_email !== email)) return invalid();
+          if (rpc === "inspect_invitation") { const { id: group_id, ...details } = groups.get(inv.group_id); return send(200, { status: "ok", group: { group_id, ...details } }); }
+          if (!manages(hid) || memberships.some(m => m.group_id === inv.group_id && m.household_id === hid && m.status !== "left")) return invalid();
+          const membership = { id: randomUUID(), group_id: inv.group_id, household_id: hid, status: "active" }; memberships.push(membership); inv.use_count++; if (inv.max_uses != null && inv.use_count >= inv.max_uses) inv.status = "exhausted";
+          return send(200, { status: "ok", destination_kind: "group", destination_id: inv.group_id });
+        }
+        if (body.p_kind !== "household") return invalid();
+        const inv = invites.find(i => i.token_hash === body.p_token_hash && i.invited_email === email && !i.consumed_at && !i.revoked_at && new Date(i.expires_at) > new Date() && !houses.get(i.household_id)?.archived_at);
+        if (!inv || access.some(a => a.household_id === inv.household_id && a.user_id === id)) return invalid();
+        if (rpc === "inspect_invitation") return send(200, { status: "ok" });
+        inv.consumed_at = new Date().toISOString(); access.push({ household_id: inv.household_id, user_id: id, role: "member", created_at: new Date().toISOString() });
+        const existing = people.find(p => p.id === inv.participant_id);
+        if (existing) existing.linked_user_id = id;
+        else people.push({ id: randomUUID(), household_id: inv.household_id, linked_user_id: id, first_name: body.p_first_name, last_name: body.p_last_name, member_type: "adult", archived_at: null });
+        return send(200, { status: "ok", destination_kind: "household", destination_id: inv.household_id });
+      }
+      if (rpc === "revoke_group_invitation") {
+        if (!isAdmin(body.p_group_id)) return denied();
+        const inv = groupInvites.find(i => i.id === body.p_invitation_id && i.group_id === body.p_group_id && i.status === "active"); if (!inv) return denied(); inv.status = "revoked"; return send(200, null);
+      }
       if (rpc === "onboard_household") {
         if (body.p_display_name === "Provider unavailable") return send(503, { code: "P0001", message: "private database details" });
         if (body.p_display_name === "Slow household") await new Promise(resolve => setTimeout(resolve, 1000));
@@ -103,16 +172,6 @@ const server = http.createServer(async (req, res) => {
       if (rpc === "create_household_invitation") {
         const invitation = { id: randomUUID(), household_id: hid, invited_email: body.p_email.toLowerCase(), token_hash: body.p_token_hash, participant_id: body.p_participant_id ?? null, expires_at: new Date(Date.now() + 7 * 86400000).toISOString(), consumed_at: null, revoked_at: null };
         invites.push(invitation); return send(200, invitation.id);
-      }
-      if (rpc === "accept_household_invitation") {
-        const invitation = invites.find(i => i.token_hash === body.p_token_hash && i.invited_email === email && !i.consumed_at && !i.revoked_at);
-        if (!invitation) return denied();
-        invitation.consumed_at = new Date().toISOString();
-        access.push({ household_id: invitation.household_id, user_id: id, role: "member", created_at: new Date().toISOString() });
-        const existing = people.find(p => p.id === invitation.participant_id);
-        if (existing) existing.linked_user_id = id;
-        else people.push({ id: randomUUID(), household_id: invitation.household_id, linked_user_id: id, first_name: body.p_first_name, last_name: body.p_last_name, member_type: "adult", archived_at: null });
-        return send(200, invitation.household_id);
       }
       if (rpc === "archive_household_participant") { const p = people.find(p => p.id === body.p_member_id); if (p) p.archived_at = new Date().toISOString(); return send(200, null); }
       if (rpc === "revoke_household_invitation") { const inv = invites.find(i => i.id === body.p_invitation_id); if (inv) inv.revoked_at = new Date().toISOString(); return send(200, null); }

@@ -15,7 +15,7 @@ export default async function HouseholdPage({ params }: { params: Promise<{ id: 
   return <main className="mx-auto w-full max-w-3xl p-6 text-slate-900"><Link href="/account" className="text-teal-800 underline">Your account</Link>
     <h1 className="my-4 text-3xl font-semibold">{household.display_name ?? "Household"}</h1><p>Your role: {ownRole === "owner" ? "Owner" : ownRole === "admin" ? "Legacy administrator" : "Member"}</p>
     <HouseholdSelector households={households ?? []} selected={id} />
-    <nav className="flex gap-4"><a href="#participants" className="underline">Participants</a><a href="#settings" className="underline">Household settings</a></nav>
+    <nav className="flex gap-4"><Link href="/groups" className="underline">Your groups</Link><a href="#participants" className="underline">Participants</a><a href="#settings" className="underline">Household settings</a></nav>
     <section id="participants" className="mt-8"><h2 className="text-2xl font-semibold">Participants</h2><p>Participants can be adults or children, with or without accounts.</p>
       {participants.map(p => <article key={p.id} className="my-4 rounded-xl border p-4"><h3 className="font-semibold">{p.first_name} {p.last_name}</h3>
         {p.linked_user_id && <p className="text-sm">Account-linked adult</p>}

@@ -57,21 +57,21 @@ select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-00000000
 set local role authenticated;
 select is(current_user::text,'authenticated','ordinary role');
 select is(auth.uid(),'20000000-0000-4000-8000-000000000004'::uuid,'verified fixture subject');
-select throws_ok($q$select public.accept_household_invitation(repeat('a',64),'Wrong','Email')$q$,'22023',null,'forged JWT email rejected');
+select is((public.accept_invitation('household',repeat('a',64),null,'Wrong','Email')->>'status'),'invalid','forged JWT email rejected');
 
 reset role; set local role :"fixture_owner";
 select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-000000000008","email":"forged@example.test"}',true);
 set local role authenticated;
 select is(current_user::text,'authenticated','ordinary role');
 select is(auth.uid(),'20000000-0000-4000-8000-000000000008'::uuid,'verified fixture subject');
-select lives_ok($q$select public.accept_household_invitation(repeat('a',64),'Group','Admin')$q$,'Auth email matches invitation despite forged JWT email');
+select is((public.accept_invitation('household',repeat('a',64),null,'Group','Admin')->>'status'),'ok','Auth email matches invitation despite forged JWT email');
 select is((select linked_user_id from public.household_members where id='20000000-0000-4000-8000-000000000203'),'20000000-0000-4000-8000-000000000008'::uuid,'existing participant linked');
 select is((select role from public.household_access where household_id='20000000-0000-4000-8000-000000000101' and user_id='20000000-0000-4000-8000-000000000008'),'member','acceptance grants Member');
 select is((select count(*)::int from public.household_invitation_redemptions where user_id='20000000-0000-4000-8000-000000000008'),1,'one redemption recorded');
-select throws_ok($q$select public.accept_household_invitation(repeat('a',64),'Group','Admin')$q$,'22023',null,'duplicate acceptance rejected');
+select is((public.accept_invitation('household',repeat('a',64),null,'Group','Admin')->>'status'),'invalid','duplicate acceptance rejected');
 reset role; set local role :"fixture_owner";
-select is((select count(*)::int from public.household_invitation_redemptions),1,'duplicate did not add audit');
-select is((select count(*)::int from public.household_invitations where consumed_at is not null),1,'one consumed invitation');
+select is((select count(*)::int from public.household_invitation_redemptions where user_id::text like '20000000-%'),1,'duplicate did not add audit');
+select is((select count(*)::int from public.household_invitations where consumed_at is not null and household_id::text like '20000000-%'),1,'one consumed invitation');
 
 reset role; set local role :"fixture_owner";
 select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-000000000001","email":"forged@example.test"}',true);
@@ -84,7 +84,7 @@ select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-00000000
 set local role authenticated;
 select is(current_user::text,'authenticated','existing-member assertion uses ordinary role');
 select is(auth.uid(),'20000000-0000-4000-8000-000000000008'::uuid,'existing-member subject');
-select throws_ok($q$select public.accept_household_invitation(repeat('9',64),'Group','Admin')$q$,'22023',null,'already-member acceptance denied');
+select is((public.accept_invitation('household',repeat('9',64),null,'Group','Admin')->>'status'),'invalid','already-member acceptance denied');
 reset role; set local role :"fixture_owner";
 select is((select consumed_at from public.household_invitations where token_hash=repeat('9',64)),null::timestamptz,'already-member rejection did not consume invitation');
 select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-000000000001"}',true);
@@ -143,24 +143,24 @@ select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-00000000
 set local role authenticated;
 select is(current_user::text,'authenticated','ordinary role');
 select is(auth.uid(),'20000000-0000-4000-8000-000000000008'::uuid,'verified fixture subject');
-select throws_ok($q$select public.accept_household_invitation(repeat('c',64),'Group','Admin')$q$,'22023',null,'cannot join archived household');
+select is((public.accept_invitation('household',repeat('c',64),null,'Group','Admin')->>'status'),'invalid','cannot join archived household');
 reset role; set local role :"fixture_owner";
 insert into public.household_invitations(household_id,invited_email,token_hash,created_by_user_id,expires_at) values ('20000000-0000-4000-8000-000000000101','group.admin@example.test',repeat('d',64),'20000000-0000-4000-8000-000000000001',now()-interval '1 minute');
 insert into public.household_invitations(household_id,invited_email,token_hash,created_by_user_id,revoked_at) values ('20000000-0000-4000-8000-000000000101','group.admin@example.test',repeat('e',64),'20000000-0000-4000-8000-000000000001',now());
 insert into public.household_invitations(household_id,invited_email,token_hash,created_by_user_id,participant_id) values ('20000000-0000-4000-8000-000000000101','group.admin@example.test',repeat('f',64),'20000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000203');
-create temporary table before_attempt as select (select jsonb_agg(to_jsonb(a) order by household_id,user_id) from public.household_access a) access,(select jsonb_agg(to_jsonb(i) order by id) from public.household_invitations i) invites,(select jsonb_agg(to_jsonb(r) order by invitation_id) from public.household_invitation_redemptions r) audit, (select jsonb_agg(to_jsonb(p) order by id) from public.profiles p where id::text like '20000000-%') profiles, (select jsonb_agg(to_jsonb(m) order by id) from public.household_members m where household_id::text like '20000000-%') participants;
+create temporary table before_attempt as select (select jsonb_agg(to_jsonb(a) order by household_id,user_id) from public.household_access a where household_id::text like '20000000-%') access,(select jsonb_agg(to_jsonb(i) order by id) from public.household_invitations i where household_id::text like '20000000-%') invites,(select jsonb_agg(to_jsonb(r) order by invitation_id) from public.household_invitation_redemptions r where user_id::text like '20000000-%') audit, (select jsonb_agg(to_jsonb(p) order by id) from public.profiles p where id::text like '20000000-%') profiles, (select jsonb_agg(to_jsonb(m) order by id) from public.household_members m where household_id::text like '20000000-%') participants;
 
 reset role; set local role :"fixture_owner";
 select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-000000000008","email":"forged@example.test"}',true);
 set local role authenticated;
 select is(current_user::text,'authenticated','ordinary role');
 select is(auth.uid(),'20000000-0000-4000-8000-000000000008'::uuid,'verified fixture subject');
-select throws_ok($q$select public.accept_household_invitation(repeat('d',64),'Group','Admin')$q$,'22023',null,'expired invitation rejected');
-select throws_ok($q$select public.accept_household_invitation(repeat('e',64),'Group','Admin')$q$,'22023',null,'revoked invitation rejected');
-select throws_ok($q$select public.accept_household_invitation(repeat('f',64),'Group','Admin')$q$,'22023',null,'ineligible participant invitation rejected');
-select throws_ok($q$select public.accept_household_invitation(repeat('0',64),'Group','Admin')$q$,'22023',null,'unknown invitation rejected');
+select is((public.accept_invitation('household',repeat('d',64),null,'Group','Admin')->>'status'),'invalid','expired invitation rejected');
+select is((public.accept_invitation('household',repeat('e',64),null,'Group','Admin')->>'status'),'invalid','revoked invitation rejected');
+select is((public.accept_invitation('household',repeat('f',64),null,'Group','Admin')->>'status'),'invalid','ineligible participant invitation rejected');
+select is((public.accept_invitation('household',repeat('0',64),null,'Group','Admin')->>'status'),'invalid','unknown invitation rejected');
 reset role; set local role :"fixture_owner";
-select is((select (select jsonb_agg(to_jsonb(a) order by household_id,user_id) from public.household_access a)=access and (select jsonb_agg(to_jsonb(i) order by id) from public.household_invitations i)=invites and (select jsonb_agg(to_jsonb(r) order by invitation_id) from public.household_invitation_redemptions r)=audit and (select jsonb_agg(to_jsonb(p) order by id) from public.profiles p where id::text like '20000000-%')=profiles and (select jsonb_agg(to_jsonb(m) order by id) from public.household_members m where household_id::text like '20000000-%')=participants from before_attempt),true,'rejections preserved membership invitation and audit state');
+select is((select (select jsonb_agg(to_jsonb(a) order by household_id,user_id) from public.household_access a where household_id::text like '20000000-%')=access and (select jsonb_agg(to_jsonb(i) order by id) from public.household_invitations i where household_id::text like '20000000-%')=invites and (select jsonb_agg(to_jsonb(r) order by invitation_id) from public.household_invitation_redemptions r where user_id::text like '20000000-%')=audit and (select jsonb_agg(to_jsonb(p) order by id) from public.profiles p where id::text like '20000000-%')=profiles and (select jsonb_agg(to_jsonb(m) order by id) from public.household_members m where household_id::text like '20000000-%')=participants from before_attempt),true,'rejections preserved membership invitation and audit state');
 
 reset role; set local role :"fixture_owner";
 select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-000000000001","email":"forged@example.test"}',true);
@@ -201,7 +201,7 @@ select set_config('request.jwt.claims','{}',true);
 set local role anon;
 select is((select current_user::text),'anon','anonymous role verified');
 select is((select auth.uid()),null::uuid,'anonymous identity verified');
-select throws_ok($q$select public.accept_household_invitation(repeat('a',64),'A','B')$q$,'42501',null,'anonymous acceptance denied');
+select throws_ok($q$select public.accept_invitation('household',repeat('a',64),null,'A','B')$q$,'42501',null,'anonymous acceptance denied');
 reset role; set local role :"fixture_owner";
 select throws_ok($q$do $body$ begin
  update public.household_access set role='member' where household_id='20000000-0000-4000-8000-000000000101';

@@ -69,7 +69,7 @@ select is((current_user::text), 'anon', 'assertion executes as ordinary role');
 
 select is(auth.uid(), null::uuid, 'anonymous JWT has no subject');
 
-select throws_ok($sql$select public.redeem_group_invitation('4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000103')$sql$, '42501', null, 'anonymous redemption denied');
+select throws_ok($sql$select public.accept_invitation('group','4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000103')$sql$, '42501', null, 'anonymous redemption denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -87,7 +87,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000003'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000101')$sql$, 'P0001', 'You cannot add this household to a group', 'ordinary household member redemption denied');
+select is((public.accept_invitation('group','4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000101')->>'status'),'invalid','ordinary household member redemption denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -105,7 +105,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000001'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000103')$sql$, 'P0001', 'You cannot add this household to a group', 'other household substitution denied');
+select is((public.accept_invitation('group','4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000103')->>'status'),'invalid','other household substitution denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -123,7 +123,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000005'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('66a7cef697570a5d882a43ddb3c74041dc0b5194d7d171a257afdabca635454f','20000000-0000-4000-8000-000000000103')$sql$, 'P0001', 'Invalid invitation', 'unknown hash denied');
+select is((public.accept_invitation('group','66a7cef697570a5d882a43ddb3c74041dc0b5194d7d171a257afdabca635454f','20000000-0000-4000-8000-000000000103')->>'status'),'invalid','unknown hash denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -141,7 +141,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000006'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('b16d3bd1ad44baaac304703189b537d40433f6ad383896bc043579f74b1d0770','20000000-0000-4000-8000-000000000104')$sql$, 'P0001', 'This invitation was issued to another email address', 'wrong direct email denied');
+select is((public.accept_invitation('group','b16d3bd1ad44baaac304703189b537d40433f6ad383896bc043579f74b1d0770','20000000-0000-4000-8000-000000000104')->>'status'),'invalid','wrong direct email denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -159,7 +159,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000006'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('b16d3bd1ad44baaac304703189b537d40433f6ad383896bc043579f74b1d0770','20000000-0000-4000-8000-000000000104')$sql$, 'P0001', 'This invitation was issued to another email address', 'forged JWT email does not bypass direct invitation');
+select is((public.accept_invitation('group','b16d3bd1ad44baaac304703189b537d40433f6ad383896bc043579f74b1d0770','20000000-0000-4000-8000-000000000104')->>'status'),'invalid','forged JWT email does not bypass direct invitation');
 
 reset role; set local role :"fixture_owner";
 
@@ -177,7 +177,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000005'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('307aa056f7977b04a1e340ec4f1e1c045e2104d434cb07fe11c98a87e9b248f9','20000000-0000-4000-8000-000000000103')$sql$, 'P0001', 'Invitation has expired', 'expired invitation denied');
+select is((public.accept_invitation('group','307aa056f7977b04a1e340ec4f1e1c045e2104d434cb07fe11c98a87e9b248f9','20000000-0000-4000-8000-000000000103')->>'status'),'invalid','expired invitation denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -195,7 +195,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000005'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('9af9f7ed6a9d0781f84df42a59f0636496d8c43af0a235dd136ab9959deba789','20000000-0000-4000-8000-000000000103')$sql$, 'P0001', 'Invitation is no longer active', 'revoked invitation denied');
+select is((public.accept_invitation('group','9af9f7ed6a9d0781f84df42a59f0636496d8c43af0a235dd136ab9959deba789','20000000-0000-4000-8000-000000000103')->>'status'),'invalid','revoked invitation denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -213,7 +213,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000005'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('2e52161859e5997a1cd1e1d39f04c0bbe90b60bb17f5bf6b7957c202e275c867','20000000-0000-4000-8000-000000000103')$sql$, 'P0001', 'Invitation is no longer active', 'exhausted invitation denied');
+select is((public.accept_invitation('group','2e52161859e5997a1cd1e1d39f04c0bbe90b60bb17f5bf6b7957c202e275c867','20000000-0000-4000-8000-000000000103')->>'status'),'invalid','exhausted invitation denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -231,7 +231,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000005'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('7c3efb5ed558bd7e0c4175cdd7f586d3c440c1dfd1f98ca9c055aca5c6819f97','20000000-0000-4000-8000-000000000103')$sql$, 'P0001', 'Invitation has reached its usage limit', 'active invite at usage limit denied');
+select is((public.accept_invitation('group','7c3efb5ed558bd7e0c4175cdd7f586d3c440c1dfd1f98ca9c055aca5c6819f97','20000000-0000-4000-8000-000000000103')->>'status'),'invalid','active invite at usage limit denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -249,7 +249,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000001'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000101')$sql$, 'P0001', 'Household is already a member of this group', 'already active membership denied');
+select is((public.accept_invitation('group','4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000101')->>'status'),'invalid','already active membership denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -267,7 +267,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000007'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000105')$sql$, 'P0001', 'Household cannot rejoin this group using an invitation', 'removed household cannot rejoin');
+select is((public.accept_invitation('group','4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000105')->>'status'),'invalid','removed household cannot rejoin');
 
 reset role; set local role :"fixture_owner";
 
@@ -283,7 +283,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000005'::uuid, 'JWT subject matches fixture user');
 
-select lives_ok($sql$select public.redeem_group_invitation('b16d3bd1ad44baaac304703189b537d40433f6ad383896bc043579f74b1d0770','20000000-0000-4000-8000-000000000103')$sql$, 'matching database email redeems direct invitation');
+select is((public.accept_invitation('group','b16d3bd1ad44baaac304703189b537d40433f6ad383896bc043579f74b1d0770','20000000-0000-4000-8000-000000000103')->>'status'),'ok','matching database email redeems direct invitation');
 
 select is((select count(*)::integer from public.group_invitation_redemptions where household_id='20000000-0000-4000-8000-000000000103'), 1, 'redeemer sees own household audit');
 
@@ -309,7 +309,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000005'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('b16d3bd1ad44baaac304703189b537d40433f6ad383896bc043579f74b1d0770','20000000-0000-4000-8000-000000000103')$sql$, 'P0001', 'Invitation is no longer active', 'consumed direct invitation cannot be reused');
+select is((public.accept_invitation('group','b16d3bd1ad44baaac304703189b537d40433f6ad383896bc043579f74b1d0770','20000000-0000-4000-8000-000000000103')->>'status'),'invalid','consumed direct invitation cannot be reused');
 
 reset role; set local role :"fixture_owner";
 
@@ -325,7 +325,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000006'::uuid, 'JWT subject matches fixture user');
 
-select lives_ok($sql$select public.redeem_group_invitation('4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000104')$sql$, 'left household rejoins with valid group link');
+select is((public.accept_invitation('group','4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000104')->>'status'),'ok','left household rejoins with valid group link');
 
 reset role; set local role :"fixture_owner";
 
@@ -345,7 +345,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000006'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000104')$sql$, 'P0001', 'Household is already a member of this group', 'duplicate active redemption denied');
+select is((public.accept_invitation('group','4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000104')->>'status'),'invalid','duplicate active redemption denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -365,7 +365,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000006'::uuid, 'JWT subject matches fixture user');
 
-select throws_ok($sql$select public.redeem_group_invitation('4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000104')$sql$, '23505', null, 'same invitation household pair cannot redeem twice');
+select is((public.accept_invitation('group','4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000104')->>'status'),'invalid','same invitation household pair cannot redeem twice');
 
 reset role; set local role :"fixture_owner";
 
@@ -381,7 +381,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000006'::uuid, 'JWT subject matches fixture user');
 
-select lives_ok($sql$select public.redeem_group_invitation('22972ad2508f46f01a050f8f458eda664cd40fb13b9d40e538c19b53b066d0cd','20000000-0000-4000-8000-000000000104')$sql$, 'fresh unlimited link allows rejoining after leaving');
+select is((public.accept_invitation('group','22972ad2508f46f01a050f8f458eda664cd40fb13b9d40e538c19b53b066d0cd','20000000-0000-4000-8000-000000000104')->>'status'),'ok','fresh unlimited link allows rejoining after leaving');
 
 reset role; set local role :"fixture_owner";
 
@@ -397,7 +397,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000005'::uuid, 'JWT subject matches fixture user');
 
-select lives_ok($sql$select public.redeem_group_invitation('4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000103')$sql$, 'second distinct household consumes final group-link use');
+select is((public.accept_invitation('group','4c4d5928d6a5d126b140c1e84e94867f11b70269d9692c7e75ca355bed42d8f9','20000000-0000-4000-8000-000000000103')->>'status'),'ok','second distinct household consumes final group-link use');
 
 reset role; set local role :"fixture_owner";
 
@@ -433,7 +433,7 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000002'::uuid, 'JWT subject matches fixture user');
 
-select lives_ok($sql$select public.redeem_group_invitation('22972ad2508f46f01a050f8f458eda664cd40fb13b9d40e538c19b53b066d0cd','20000000-0000-4000-8000-000000000101')$sql$, 'household admin can redeem a valid invitation');
+select is((public.accept_invitation('group','22972ad2508f46f01a050f8f458eda664cd40fb13b9d40e538c19b53b066d0cd','20000000-0000-4000-8000-000000000101')->>'status'),'ok','household admin can redeem a valid invitation');
 
 reset role; set local role :"fixture_owner";
 

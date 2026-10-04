@@ -769,6 +769,16 @@ export type Database = {
         }
         Returns: string
       }
+      accept_invitation: {
+        Args: {
+          p_first_name?: string
+          p_household_id?: string
+          p_kind: string
+          p_last_name?: string
+          p_token_hash: string
+        }
+        Returns: Json
+      }
       archive_household_participant: {
         Args: { p_household_id: string; p_member_id: string }
         Returns: undefined
@@ -801,6 +811,16 @@ export type Database = {
         }
         Returns: string
       }
+      create_group_once: {
+        Args: {
+          p_description?: string
+          p_group_type: string
+          p_household_id: string
+          p_name: string
+          p_request_id: string
+        }
+        Returns: string
+      }
       create_household: { Args: { p_display_name?: string }; Returns: string }
       create_household_invitation: {
         Args: {
@@ -815,6 +835,10 @@ export type Database = {
         Args: { p_household_id: string }
         Returns: undefined
       }
+      inspect_invitation: {
+        Args: { p_kind: string; p_token_hash: string }
+        Returns: Json
+      }
       leave_household: { Args: { p_household_id: string }; Returns: undefined }
       onboard_household: {
         Args: {
@@ -824,6 +848,15 @@ export type Database = {
           p_request_id: string
         }
         Returns: string
+      }
+      preview_group_invitation: {
+        Args: { p_token_hash: string }
+        Returns: {
+          description: string
+          group_id: string
+          group_type: string
+          name: string
+        }[]
       }
       promote_household_member: {
         Args: { p_household_id: string; p_user_id: string }
@@ -835,6 +868,10 @@ export type Database = {
       }
       remove_household_member: {
         Args: { p_household_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      revoke_group_invitation: {
+        Args: { p_group_id: string; p_invitation_id: string }
         Returns: undefined
       }
       revoke_household_invitation: {

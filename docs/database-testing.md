@@ -97,3 +97,11 @@ The historical local-stack check is optional; do not mark it verified until `pnp
 ## Phase 1 household update
 
 The household onboarding suite adds real-role coverage for Member participant management, email-restricted household invitations, account linkage, Owner succession, last-account archival, history preservation, and deferred ownership invariants. Hard deletion of participants is replaced by controlled archival. See [household onboarding](household-onboarding.md) for current execution results; the earlier 255-assertion record above describes Phase 0.
+
+## Phase 1 group update
+
+The group onboarding suite adds controlled creation retries, separate Group Owner access, settings validation, confirmed-email previews, metadata-only invitation reads, revocation, uniform new-invitation expiry, usage limits, and legacy household Admin compatibility. Existing invitation and isolation suites remain in place. Household test audit/count snapshots are scoped to synthetic identities so unrelated live Dev history does not change expected results. See [group onboarding](group-onboarding.md) for current execution results and the manual browser checklist.
+
+## Invitation-code update
+
+The code suite verifies ordinary-role access, removal of unthrottled RPC entrypoints, private counter denial, hash collisions, shared 10/minute and 50/hour windows, synthetic boundary timestamps, retry timing, counted failures, provider-failure rollback, and successful acceptance. Existing household/group suites now assert guarded structured outcomes alongside actual data changes and unchanged rejection snapshots. The disposable serialization runner also checks simultaneous attempts at the shared cap. See [invitation codes](invitation-codes.md) for current execution results; Cloud fixtures remain transaction-scoped and never seed/reset Dev.

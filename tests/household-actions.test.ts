@@ -13,8 +13,8 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.client.mockResolvedValue({ auth: { getUser: mocks.getUser }, rpc: mocks.rpc, from: mocks.from });
   mocks.getUser.mockResolvedValue({ data: { user: { id: userId } }, error: null });
-  mocks.rpc.mockResolvedValue({ data: householdId, error: null });
-  mocks.getCookie.mockReturnValue({ value: "a".repeat(64) });
+  mocks.rpc.mockImplementation(async (name: string) => ({ data: name === "accept_invitation" ? { status: "ok", destination_kind: "household", destination_id: householdId } : householdId, error: null }));
+  mocks.getCookie.mockImplementation((name: string) => name === "rallyroute-household-invite" ? { value: "a".repeat(64) } : undefined);
 });
 describe("household actions", () => {
   it.each([
@@ -40,29 +40,29 @@ describe("household actions", () => {
   });
   it("only sends a hash to the invitation RPC", async () => {
     const result = await householdAction({ command: "invite", householdId, email: "adult@example.test", participantId });
-    const token = result.invitationPath!.split("#")[1];
-    expect(token).toMatch(/^[a-f0-9]{64}$/);
+    const token = result.invitationCode!;
+    expect(token).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/);
     expect(mocks.rpc).toHaveBeenCalledWith("create_household_invitation", { p_household_id: householdId, p_email: "adult@example.test", p_token_hash: createHash("sha256").update(token).digest("hex"), p_participant_id: participantId });
     expect(JSON.stringify(mocks.rpc.mock.calls)).not.toContain(token);
   });
   it("returns no invitation link if the provider rejects creation", async () => {
     mocks.rpc.mockResolvedValue({ data: null, error: { code: "42501", message: "private provider error" } });
     const result = await householdAction({ command: "invite", householdId, email: "adult@example.test" });
-    expect(result.ok).toBe(false); expect(result.invitationPath).toBeUndefined(); expect(result.message).not.toContain("private");
+    expect(result.ok).toBe(false); expect(result.invitationPath).toBeUndefined(); expect(result.invitationCode).toBeUndefined(); expect(result.message).not.toContain("private");
   });
   it("requires a valid pending cookie for acceptance", async () => {
     mocks.getCookie.mockReturnValue(undefined);
-    expect((await householdAction({ command: "accept", ...names })).message).toContain("Open your invitation");
+    expect((await householdAction({ command: "accept", ...names })).message).toContain("invitation code");
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it("accepts explicitly and clears invitation context only on success", async () => {
     expect(await householdAction({ command: "accept", ...names })).toMatchObject({ ok: true, destination: `/households/${householdId}` });
-    expect(mocks.rpc).toHaveBeenCalledWith("accept_household_invitation", { p_token_hash: "a".repeat(64), p_first_name: "Alex", p_last_name: "Example" });
+    expect(mocks.rpc).toHaveBeenCalledWith("accept_invitation", { p_kind: "household", p_token_hash: "a".repeat(64), p_first_name: "Alex", p_last_name: "Example" });
     expect(mocks.deleteCookie).toHaveBeenCalledOnce();
   });
   it("keeps context on rejected acceptance and gives email/reissue guidance", async () => {
     mocks.rpc.mockResolvedValue({ error: { code: "22023", message: "Auth private details" }, data: null });
-    expect((await householdAction({ command: "accept", ...names })).message).toContain("invited email");
+    expect((await householdAction({ command: "accept", ...names })).message).not.toContain("private");
     expect(mocks.deleteCookie).not.toHaveBeenCalled();
   });
   it.each(["23514", "42501", "P0001"])("maps database errors safely: %s", async code => {
@@ -110,4 +110,13 @@ it("allows a transportation participant without a last name", async () => {
   mocks.from.mockReturnValue(query);
   expect((await householdAction({ command: "participant", householdId, firstName: "Casey", memberType: "adult" })).ok).toBe(true);
   expect(query.insert).toHaveBeenCalledWith({ household_id: householdId, first_name: "Casey", last_name: null, member_type: "adult" });
+});
+
+it("resumes a pending group invitation after household creation", async () => {
+  mocks.getCookie.mockImplementation((name: string) => name === "rallyroute-group-invite" ? { value: "b".repeat(64) } : undefined);
+  expect(await householdAction({ command: "create", ...names, displayName: "Home", requestId: userId })).toMatchObject({ ok: true, destination: "/group-invitations/accept" });
+});
+it("a household invitation replaces pending group context", async () => {
+  await captureHouseholdInvitation("a".repeat(64));
+  expect(mocks.deleteCookie).toHaveBeenCalledWith("rallyroute-group-invite");
 });
