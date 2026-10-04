@@ -56,7 +56,7 @@ Automated results on 2026-10-04:
 
 Database assertions use ordinary `anon`/`authenticated` roles and verified JWT subjects; fixture setup and private state snapshots use owner privileges. Browser tests are explicitly mocked and do not establish Cloud browser evidence.
 
-Manual Cloud verification: user agreed to run the following checks on 2026-10-04; results pending.
+Manual Cloud verification: on 2026-10-04, the user reported testing is mostly complete and deferred the remaining checks until another time. Specific completed checklist items were not identified, so individual checks remain unconfirmed. Manual verification is partially complete; Phase 2 completion remains pending.
 
 1. With two controlled accounts in distinct households in the same group, create a structured destination and a one-off event with both anchors. Confirm dates and timezone, including an overnight event.
 2. Independently select each household, save Going attendance, add an owned private address, and configure To event and From event rides. Verify each household sees only its own participants, addresses, and preferences.
