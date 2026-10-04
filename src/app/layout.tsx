@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "RallyRoute",
+  referrer: "no-referrer",
   description: "Discover compatible carpools within your trusted groups.",
 };
 

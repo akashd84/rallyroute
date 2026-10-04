@@ -28,3 +28,5 @@ Database migrations are the schema source of truth. Follow `AGENTS.md` for datab
 ## Database fixtures and security checks
 
 See [database testing](docs/database-testing.md) for fictional seed identities, Docker prerequisites, local reset commands, and the real-role pgTAP suites. Run `pnpm test:db` separately from application tests; fixtures are never seeded into Cloud.
+
+Household onboarding, ownership rules, invitation setup, and verification: [docs/household-onboarding.md](docs/household-onboarding.md).

@@ -12,7 +12,8 @@
     "db:start": "supabase start",
     "db:reset": "supabase db reset --local",
     "test:db": "supabase test db --local supabase/tests/database",
-    "db:lint:local": "supabase db lint --local --schema public,private --fail-on error"
+    "db:lint:local": "supabase db lint --local --schema public,private --fail-on error",
+    "test:db:linked": "node scripts/test-db-linked.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

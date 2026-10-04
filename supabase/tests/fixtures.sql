@@ -1,3 +1,10 @@
+-- Refuse collisions rather than mutate preexisting fixture identities on linked Dev.
+do $$ begin
+ if exists(select 1 from auth.users where id::text like '20000000-0000-4000-8000-%') then
+  raise exception 'Test fixture namespace is already occupied; refusing to mutate existing identities';
+ end if;
+end $$;
+
 -- Synthetic fixtures only: stable IDs, reserved example.test emails, no login credentials.
 
 insert into auth.users (id, instance_id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at) values

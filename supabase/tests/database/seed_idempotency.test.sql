@@ -1,5 +1,12 @@
 -- Fixture-loading assertions run as the owner; authorization suites use API roles.
 begin;
+-- Supabase's temporary CLI login can assume postgres for fixture setup.
+-- Authorization assertions below always switch back to anon/authenticated.
+\if :{?fixture_owner}
+\else
+select current_user as fixture_owner \gset
+\endif
+set local role :"fixture_owner";
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 select no_plan();

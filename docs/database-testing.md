@@ -2,7 +2,11 @@
 
 These tests exercise real PostgreSQL grants, RLS, and controlled functions. Vitest and mocked browser tests do not replace them. The database suite is separate from `pnpm test`.
 
-## Local setup
+## Linked development verification
+
+Rocket uses linked Supabase Dev. Set `RALLYROUTE_TEST_DATABASE_URL` securely and run `pnpm test:db:linked` with `psql` available. The runner excludes seed idempotency, assumes `postgres` only for transaction-scoped setup/snapshots, and switches assertions to ordinary roles. No Cloud reset or development seed is permitted. Fixture namespace collisions abort. Each suite rolls back, including any pgTAP extension creation. Docker is optional for local/CI verification; it is not a gate for linked development. See [household onboarding](household-onboarding.md) for the current permission matrix and verification record.
+
+## Optional local setup
 
 Use a machine with Docker (or a compatible supported container runtime) available to the Supabase CLI. This task does not install Docker on Rocket. Install project dependencies with `pnpm install --frozen-lockfile`, then run:
 
@@ -28,7 +32,7 @@ Development IDs use `10000000-0000-4000-8000-` followed by the 12-digit fixture 
 | --- | --- | --- |
 | 1 / a.owner@example.test | A owner | Active member |
 | 2 / a.admin@example.test | A admin | Active member, not group admin |
-| 3 / a.member@example.test | A read-only member | Active member, not group admin |
+| 3 / a.member@example.test | A member (can manage participants) | Active member, not group admin |
 | 4 / b.owner@example.test | B owner | Active member |
 | 5 / c.owner@example.test | C owner | Outsider; direct invitation target |
 | 6 / d.owner@example.test | D owner | Left group |
@@ -47,7 +51,7 @@ Invitation numbers: 901 direct to C; 902 active two-use link; 903 expired; 904 r
 | --- | --- | --- | --- | --- |
 | Read own profile | Yes, own identity only | Yes, own identity only | Yes, own identity only | Authenticated outsider: own only; anonymous: denied |
 | Read household people/attendance/rides | Own household only | Own household only | No | Outsider: own household only; anonymous: denied |
-| Manage household people/attendance/rides | Own household, with integrity checks | No | No | Outsider: own household within applicable group rules; anonymous: denied |
+| Manage household people/attendance/rides | Own household, with integrity checks | Own household, with integrity checks | No | Outsider: own household within applicable group rules; anonymous: denied |
 | See shared group/events/destinations | Active group membership | Active group membership | Administered group | No |
 | Manage group/create invitations | Only with separate group admin role | No | Yes | No |
 | Redeem an invitation | Own household, subject to all restrictions | No | Requires separate household management access | Authenticated outsider owner/admin may redeem; anonymous: denied |
@@ -58,12 +62,12 @@ The redemption-history policy is **household access or group administration**, n
 
 ## Suite design
 
-Each file starts a transaction, installs pgTAP if needed inside that transaction, loads its own fixtures, and rolls back. Test-only grants concern pgTAP's extension schema, not application tables. Role switches set transaction-local JWT claims and assert both `current_user` and `auth.uid()`; normal-role assertions are never performed through a security-definer test helper.
+Each file starts a transaction, installs pgTAP if needed inside that transaction, loads its own fixtures, and rolls back. The suite uses existing extension-schema grants; it does not change application grants for test helpers. Role switches set transaction-local JWT claims and assert both `current_user` and `auth.uid()`; normal-role assertions are never performed through a security-definer test helper.
 
 - Seed idempotency: complete before/after data snapshots, preservation of edited fixture values, unrelated data, and expected fixture counts.
 - Identity: own/foreign profiles, household isolation, owner/admin/member permissions, immutable linkage/ownership columns, controlled household creation, missing JWT identity, anonymous denial, and RLS enabled on all public application tables.
 - Groups and participation: group-visible information, isolation between A and B, outsider denial, attendance writes, group vs household administration, private location denial, and anonymous denial.
-- Ride integrity: allowed owner/admin writes, foreign member/location rejection, missing attendance, inactive memberships, adult-only driver offers, and ordinary member denial.
+- Ride integrity: allowed owner/admin writes, foreign member/location rejection, missing attendance, inactive memberships, adult-only driver offers, and ordinary Member success within the same household.
 - Invitations: normalized direct emails and forced one-use limits, actual Auth email vs forged JWT email, invalid/status/expiry/usage restrictions, existing/removed membership rules, fresh-link rejoining, duplicate audit protection, household-admin redemption, visibility, and exact success accounting.
 
 Every rejected invitation redemption compares a complete before/after snapshot of memberships, invitations, and redemption history as the test fixture owner. The rejection itself runs under the ordinary caller role. Owner snapshots verify atomicity without bypassing the authorization assertion.
@@ -88,4 +92,8 @@ The original ride-validation trigger ran as an invoker but read `private.househo
 - Existing 28 Vitest tests, application lint, and production build passed.
 - Standard local Supabase startup/tests/lint are **pending**: Rocket has neither Docker nor Podman. The CI workflow is checked in but has not run; no commit or push was requested.
 
-Do not mark Docker/Supabase integration verified until `pnpm test:db` and `pnpm db:lint:local` pass on the actual local stack or CI. The native fallback does not test Auth service behavior, API schema exposure, or real mail delivery.
+The historical local-stack check is optional; do not mark it verified until `pnpm test:db` and `pnpm db:lint:local` pass on the actual local stack or CI. The native fallback does not test Auth service behavior, API schema exposure, or real mail delivery.
+
+## Phase 1 household update
+
+The household onboarding suite adds real-role coverage for Member participant management, email-restricted household invitations, account linkage, Owner succession, last-account archival, history preservation, and deferred ownership invariants. Hard deletion of participants is replaced by controlled archival. See [household onboarding](household-onboarding.md) for current execution results; the earlier 255-assertion record above describes Phase 0.

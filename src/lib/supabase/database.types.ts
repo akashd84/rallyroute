@@ -76,6 +76,7 @@ export type Database = {
       event_participation: {
         Row: {
           created_at: string
+          disabled_at: string | null
           event_id: string
           id: string
           member_id: string
@@ -84,6 +85,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          disabled_at?: string | null
           event_id: string
           id?: string
           member_id: string
@@ -92,6 +94,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          disabled_at?: string | null
           event_id?: string
           id?: string
           member_id?: string
@@ -492,8 +495,109 @@ export type Database = {
           },
         ]
       }
+      household_invitation_redemptions: {
+        Row: {
+          household_id: string
+          invitation_id: string
+          participant_id: string
+          redeemed_at: string
+          user_id: string
+        }
+        Insert: {
+          household_id: string
+          invitation_id: string
+          participant_id: string
+          redeemed_at?: string
+          user_id: string
+        }
+        Update: {
+          household_id?: string
+          invitation_id?: string
+          participant_id?: string
+          redeemed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_invitation_redemptions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_invitation_redemptions_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: true
+            referencedRelation: "household_invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_invitation_redemptions_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "household_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_invitations: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          created_by_user_id: string
+          expires_at: string
+          household_id: string
+          id: string
+          invited_email: string
+          participant_id: string | null
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by_user_id: string
+          expires_at?: string
+          household_id: string
+          id?: string
+          invited_email: string
+          participant_id?: string | null
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by_user_id?: string
+          expires_at?: string
+          household_id?: string
+          id?: string
+          invited_email?: string
+          participant_id?: string | null
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_invitations_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_invitations_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "household_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_members: {
         Row: {
+          archived_at: string | null
           created_at: string
           first_name: string
           household_id: string
@@ -504,6 +608,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           first_name: string
           household_id: string
@@ -514,6 +619,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           first_name?: string
           household_id?: string
@@ -535,18 +641,21 @@ export type Database = {
       }
       households: {
         Row: {
+          archived_at: string | null
           created_at: string
           display_name: string | null
           id: string
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -590,6 +699,7 @@ export type Database = {
           anchor_latest_at: string | null
           available_seats: number | null
           created_at: string
+          disabled_at: string | null
           event_id: string
           household_location_id: string
           id: string
@@ -604,6 +714,7 @@ export type Database = {
           anchor_latest_at?: string | null
           available_seats?: number | null
           created_at?: string
+          disabled_at?: string | null
           event_id: string
           household_location_id: string
           id?: string
@@ -618,6 +729,7 @@ export type Database = {
           anchor_latest_at?: string | null
           available_seats?: number | null
           created_at?: string
+          disabled_at?: string | null
           event_id?: string
           household_location_id?: string
           id?: string
@@ -649,6 +761,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_household_invitation: {
+        Args: {
+          p_first_name: string
+          p_last_name: string
+          p_token_hash: string
+        }
+        Returns: string
+      }
+      archive_household_participant: {
+        Args: { p_household_id: string; p_member_id: string }
+        Returns: undefined
+      }
+      complete_household_onboarding: {
+        Args: {
+          p_first_name: string
+          p_household_id: string
+          p_last_name: string
+        }
+        Returns: string
+      }
       create_group: {
         Args: {
           p_description?: string
@@ -670,9 +802,44 @@ export type Database = {
         Returns: string
       }
       create_household: { Args: { p_display_name?: string }; Returns: string }
+      create_household_invitation: {
+        Args: {
+          p_email: string
+          p_household_id: string
+          p_participant_id?: string
+          p_token_hash: string
+        }
+        Returns: string
+      }
+      demote_household_owner: {
+        Args: { p_household_id: string }
+        Returns: undefined
+      }
+      leave_household: { Args: { p_household_id: string }; Returns: undefined }
+      onboard_household: {
+        Args: {
+          p_display_name: string
+          p_first_name: string
+          p_last_name: string
+          p_request_id: string
+        }
+        Returns: string
+      }
+      promote_household_member: {
+        Args: { p_household_id: string; p_user_id: string }
+        Returns: undefined
+      }
       redeem_group_invitation: {
         Args: { p_household_id: string; p_token_hash: string }
         Returns: string
+      }
+      remove_household_member: {
+        Args: { p_household_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      revoke_household_invitation: {
+        Args: { p_household_id: string; p_invitation_id: string }
+        Returns: undefined
       }
     }
     Enums: {

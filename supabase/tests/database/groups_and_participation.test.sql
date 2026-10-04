@@ -1,16 +1,22 @@
 begin;
+-- Supabase's temporary CLI login can assume postgres for fixture setup.
+-- Authorization assertions below always switch back to anon/authenticated.
+\if :{?fixture_owner}
+\else
+select current_user as fixture_owner \gset
+\endif
+set local role :"fixture_owner";
 
 create extension if not exists pgtap with schema extensions;
 
 set local search_path = public, extensions;
 
-grant usage on schema extensions to authenticated, anon;
 
 \ir ../fixtures.sql
 
 select no_plan();
 
-reset role;
+reset role; set local role :"fixture_owner";
 
 select set_config('request.jwt.claims', '{"sub":"20000000-0000-4000-8000-000000000001","role":"authenticated","email":"a.owner@example.test"}', true);
 
@@ -46,7 +52,7 @@ with changed as (delete from public.ride_participation where member_id='20000000
 
 select throws_ok($sql$select * from private.household_locations$sql$, '42501', null, 'exact locations not directly readable');
 
-reset role;
+reset role; set local role :"fixture_owner";
 
 select set_config('request.jwt.claims', '{"sub":"20000000-0000-4000-8000-000000000004","role":"authenticated","email":"b.owner@example.test"}', true);
 
@@ -82,7 +88,7 @@ with changed as (delete from public.ride_participation where member_id='20000000
 
 select throws_ok($sql$select * from private.household_locations$sql$, '42501', null, 'exact locations not directly readable');
 
-reset role;
+reset role; set local role :"fixture_owner";
 
 select set_config('request.jwt.claims', '{"sub":"20000000-0000-4000-8000-000000000001","role":"authenticated","email":"a.owner@example.test"}', true);
 
@@ -106,7 +112,7 @@ select throws_ok($sql$insert into public.group_memberships(group_id,household_id
 
 select throws_ok($sql$select public.create_group_invitation('20000000-0000-4000-8000-000000000301','group_link','dc29af3dd716bc807c84e4e40837654c3d3eb79d53cd705a5d678288070c160d')$sql$, 'P0001', 'Group administrator access required', 'normal group member cannot create invitations');
 
-reset role;
+reset role; set local role :"fixture_owner";
 
 select set_config('request.jwt.claims', '{"sub":"20000000-0000-4000-8000-000000000003","role":"authenticated","email":"a.member@example.test"}', true);
 
@@ -116,11 +122,11 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000003'::uuid, 'JWT subject matches fixture user');
 
-with changed as (update public.event_participation set status='not_going' where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 0, 'ordinary member cannot edit attendance') from changed;
+with changed as (update public.event_participation set status='going' where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 1, 'ordinary member can edit attendance') from changed;
 
-with changed as (update public.ride_participation set max_detour_minutes=20 where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 0, 'ordinary member cannot edit ride preferences') from changed;
+with changed as (update public.ride_participation set max_detour_minutes=20 where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 1, 'ordinary member can edit ride preferences') from changed;
 
-reset role;
+reset role; set local role :"fixture_owner";
 
 select set_config('request.jwt.claims', '{"sub":"20000000-0000-4000-8000-000000000005","role":"authenticated","email":"c.owner@example.test"}', true);
 
@@ -140,7 +146,7 @@ select is((select count(*)::integer from public.event_locations where id='200000
 
 select throws_ok($sql$insert into public.event_participation(event_id,member_id,status) values ('20000000-0000-4000-8000-000000000610','20000000-0000-4000-8000-000000000206','going')$sql$, 'P0001', null, 'outsider cannot attend group event');
 
-reset role;
+reset role; set local role :"fixture_owner";
 
 select set_config('request.jwt.claims', '{"sub":"20000000-0000-4000-8000-000000000008","role":"authenticated","email":"group.admin@example.test"}', true);
 
@@ -158,7 +164,7 @@ select is((select count(*)::integer from public.household_members where househol
 
 select is((select count(*)::integer from public.ride_participation where event_id='20000000-0000-4000-8000-000000000610'), 0, 'group admin cannot see raw rides');
 
-reset role;
+reset role; set local role :"fixture_owner";
 
 select set_config('request.jwt.claims', '{}', true);
 
@@ -172,7 +178,7 @@ select throws_ok($sql$select * from private.household_locations$sql$, '42501', n
 
 select throws_ok($sql$select * from public.groups$sql$, '42501', null, 'anonymous cannot discover groups');
 
-reset role;
+reset role; set local role :"fixture_owner";
 
 select set_config('request.jwt.claims', '{}', true);
 
@@ -192,7 +198,7 @@ select throws_ok($sql$select * from public.ride_participation$sql$, '42501', nul
 
 select throws_ok($sql$select * from public.group_invitations$sql$, '42501', null, 'anonymous cannot read group_invitations');
 
-reset role;
+reset role; set local role :"fixture_owner";
 
 select * from finish();
 
