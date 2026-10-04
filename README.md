@@ -23,4 +23,8 @@ pnpm build
 
 Browser tests launch a separate app on port 3100 and a **mock** Supabase HTTP server on port 54329. They never send email or connect to Cloud. Keep those ports free. Linux must have Chromium runtime libraries installed. Mock browser tests verify SSR cookies and application behavior; they do not prove live email delivery or database authorization.
 
-Database migrations are the schema source of truth. Follow `AGENTS.md` for database validation. This authentication change needs no schema migration.
+Database migrations are the schema source of truth. Follow `AGENTS.md` for database validation.
+
+## Database fixtures and security checks
+
+See [database testing](docs/database-testing.md) for fictional seed identities, Docker prerequisites, local reset commands, and the real-role pgTAP suites. Run `pnpm test:db` separately from application tests; fixtures are never seeded into Cloud.

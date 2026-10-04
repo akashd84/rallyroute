@@ -37,6 +37,16 @@ Do not introduce assumptions that RallyRoute is only for children, schools, or p
 
 Development currently runs on the `rocket` homelab server.
 
+This project intentionally uses the linked hosted Supabase Dev project rather than a local Docker Supabase stack.
+
+For verification:
+- run pnpm lint
+- run pnpm build
+- run pnpm supabase db lint --linked --schema public,private
+- use the linked Supabase Dev project for integration checks where possible
+
+Do not mark Docker-based local Supabase verification as required unless a task specifically needs it.
+
 Production is expected to run on Vercel.
 
 Supabase Cloud is used for the development database.

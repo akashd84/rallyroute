@@ -1,0 +1,36 @@
+name: Database authorization
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Start isolated local Supabase
+        run: pnpm db:start
+      - name: Replay migrations and development seed
+        run: pnpm db:reset
+      - name: Real PostgreSQL authorization tests
+        run: pnpm test:db
+      - name: Verify suites are repeatable
+        run: pnpm test:db
+      - name: Lint application schemas
+        run: pnpm db:lint:local
+      - name: Stop local Supabase
+        if: always()
+        run: pnpm exec supabase stop --no-backup
