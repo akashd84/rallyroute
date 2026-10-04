@@ -5,6 +5,7 @@ const defaultId = "11111111-1111-4111-8111-111111111111";
 const defaultHousehold = "33333333-3333-4333-8333-333333333333";
 const hashId = email => { const h = createHash("sha256").update(email).digest("hex"); return `${h.slice(0,8)}-${h.slice(8,12)}-4${h.slice(13,16)}-8${h.slice(17,20)}-${h.slice(20,32)}`; };
 const idFor = email => ["new@example.com", "recipient@example.com", "outsider@example.com"].includes(email) ? hashId(email) : defaultId;
+const events = []; const destinations = []; const locations = []; const attendance = []; const rides = []; const series = [];
 const budgets = new Map();
 const groups = new Map(); const groupAdmins = []; const memberships = []; const groupInvites = []; const groupRequests = new Map();
 const houses = new Map(); const people = []; const access = []; const invites = []; const requests = new Map();
@@ -58,7 +59,8 @@ const server = http.createServer(async (req, res) => {
     if (claims.email === "signout-error@example.com") return send(422, { code: "unexpected_failure", msg: "private error" });
     return send(200, {});
   }
-  if (url.pathname === "/test/reset" && req.method === "POST") { budgets.clear(); groups.clear(); groupAdmins.splice(0); memberships.splice(0); groupInvites.splice(0); groupRequests.clear(); houses.clear(); people.splice(0); access.splice(0); invites.splice(0); requests.clear(); return send(200, {}); }
+  if (url.pathname === "/test/reset" && req.method === "POST") { events.splice(0); destinations.splice(0); locations.splice(0); attendance.splice(0); rides.splice(0); series.splice(0); budgets.clear(); groups.clear(); groupAdmins.splice(0); memberships.splice(0); groupInvites.splice(0); groupRequests.clear(); houses.clear(); people.splice(0); access.splice(0); invites.splice(0); requests.clear(); return send(200, {}); }
+  if (url.pathname === "/test/event-member" && req.method === "POST") { access.filter(a=>a.user_id===defaultId).forEach(a=>a.role="member"); for(let i=groupAdmins.length-1;i>=0;i--)if(groupAdmins[i].user_id===defaultId)groupAdmins.splice(i,1); return send(200,{}); }
   if (url.pathname === "/test/budget" && req.method === "POST") { budgets.set(idFor(body.email), { minute: Date.now(), hour: Date.now(), minuteCount: body.minuteCount ?? 0, hourCount: body.hourCount ?? 0 }); return send(200, {}); }
   if (url.pathname === "/test/legacy" && req.method === "POST") {
     const hash = createHash("sha256").update(body.token).digest("hex");
@@ -80,6 +82,12 @@ const server = http.createServer(async (req, res) => {
       if (value.startsWith("eq.")) return String(row[key]) === value.slice(3);
       return true;
     }));
+    if (["events","event_locations","event_series","event_participation","ride_participation"].includes(table)) {
+      const source = {events,event_locations:destinations,event_series:series,event_participation:attendance,ride_participation:rides}[table];
+      const rows = filter(source.filter(r => r.group_id ? visible(r.group_id) : people.some(p => p.id===r.member_id && ownHouses().includes(p.household_id))));
+      if (req.method === "HEAD") { res.setHeader("Content-Range",`0-${rows.length-1}/${rows.length}`); return send(200,[]); }
+      return send(200,req.headers.accept?.includes("vnd.pgrst.object") ? rows[0]??null : rows);
+    }
     if (table === "groups") {
       let rows = filter([...groups.values()].filter(g => visible(g.id)));
       if (req.method === "PATCH") { rows = rows.filter(g => isAdmin(g.id)); rows.forEach(g => Object.assign(g, body)); }
@@ -112,6 +120,35 @@ const server = http.createServer(async (req, res) => {
     if (table.startsWith("rpc/")) {
       const rpc = table.slice(4); const hid = body.p_household_id;
       const denied = () => send(400, { code: "22023", message: "private database details" });
+      if (rpc === "household_location_list") return ownHouses().includes(hid) ? send(200,locations.filter(l=>l.household_id===hid)) : denied();
+      if (rpc === "event_workflow") {
+        const d=body.p_data,c=body.p_command; const ev=events.find(e=>e.id===d.eventId);
+        if (c.startsWith("location-") && !manages(d.householdId)) return denied();
+        if ((c.startsWith("event-")||c.startsWith("destination-"))&&!isAdmin(d.groupId)) return denied();
+        if (["attendance","ride"].includes(c)&&(!ownHouses().includes(d.householdId)||!ev||ev.status!=="scheduled"))return denied();
+        const invalidate=eventId=>rides.filter(r=>r.event_id===eventId).forEach(r=>Object.assign(r,{disabled_at:new Date().toISOString(),needs_reconfirmation:true}));
+        if (c.endsWith("save") && c!=="event-save") {
+          const source=c==="location-save"?locations:destinations;
+          let row=source.find(l=>l.id===d.locationId);
+          if(row){if(c==="destination-save")events.filter(e=>e.location_id===row.id).forEach(e=>invalidate(e.id));else rides.filter(r=>r.household_location_id===row.id).forEach(r=>Object.assign(r,{disabled_at:new Date().toISOString(),needs_reconfirmation:true}));}
+          else {row={id:randomUUID(),revision:0,archived_at:null};source.push(row);}
+          Object.assign(row,{group_id:d.groupId,household_id:d.householdId,name:d.name,label:d.name,address_line_1:d.addressLine1,address_line_2:d.addressLine2,city:d.city,state_region:d.stateRegion,postal_code:d.postalCode,country_code:d.countryCode,revision:row.revision+1});return send(200,row.id);
+        }
+        if(c==="event-save"){
+          let row=ev;if(row){if(row.required_arrival_at!==d.arrival||row.ready_to_depart_at!==d.departure||row.timezone!==d.timezone||row.location_id!==d.locationId)invalidate(row.id);}
+          else {row={id:randomUUID(),revision:0,status:"scheduled",event_series_id:null};events.push(row);}
+          Object.assign(row,{group_id:d.groupId,name:d.name,location_id:d.locationId,timezone:d.timezone,required_arrival_at:d.arrival,ready_to_depart_at:d.departure,activity_starts_at:d.activityStart,activity_ends_at:d.activityEnd,revision:row.revision+1});return send(200,row.id);
+        }
+        if(c==="event-cancel"){ev.status="cancelled";ev.revision++;invalidate(ev.id);return send(200,ev.id);}
+        if(c==="attendance"){let row=attendance.find(a=>a.event_id===ev.id&&a.member_id===d.memberId);if(!row){row={id:randomUUID(),event_id:ev.id,member_id:d.memberId,disabled_at:null};attendance.push(row);}row.status=d.status;if(d.status!=="going")rides.filter(r=>r.event_id===ev.id&&r.member_id===d.memberId).forEach(r=>Object.assign(r,{disabled_at:new Date().toISOString(),needs_reconfirmation:true}));return send(200,ev.id);}
+        if(c==="ride"){let row=rides.find(r=>r.event_id===ev.id&&r.member_id===d.memberId&&r.leg===d.leg);if(!row){row={id:randomUUID(),event_id:ev.id,member_id:d.memberId,leg:d.leg};rides.push(row);}Object.assign(row,{mode:d.mode,household_location_id:d.locationId||null,anchor_earliest_at:d.earliest,anchor_latest_at:d.latest,available_seats:d.seats,max_detour_minutes:d.detour,disabled_at:null,needs_reconfirmation:false});return send(200,ev.id);}
+        const row=(c==="location-archive"?locations:destinations).find(l=>l.id===d.locationId);if(row){row.archived_at=new Date().toISOString();return send(200,row.id);}return denied();
+      }
+      if(rpc==="series_workflow"){
+        const d=body.p_data;if(!isAdmin(d.groupId))return denied();const sid=randomUUID();series.push({id:sid,group_id:d.groupId,revision:1,recurrence_spec:d.spec});
+        if(d.replaceEventId){const old=events.find(e=>e.id===d.replaceEventId);events.filter(e=>e.event_series_id===old.event_series_id&&e.original_local_date>=old.original_local_date).forEach(e=>e.status="cancelled");}
+        d.occurrences.forEach(o=>events.push({id:randomUUID(),group_id:d.groupId,event_series_id:sid,name:d.name,location_id:d.locationId,timezone:d.spec.timezone,revision:1,status:"scheduled",activity_starts_at:null,activity_ends_at:null,...o}));return send(200,sid);
+      }
       if (rpc === "create_group_once") {
         if (!manages(hid)) return denied();
         if (body.p_name === "Provider unavailable") return send(503, { code: "unexpected", message: "private details" });

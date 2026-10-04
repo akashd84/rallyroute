@@ -38,17 +38,17 @@ select is((select count(*)::integer from public.event_participation where member
 
 select is((select count(*)::integer from public.event_participation where member_id='20000000-0000-4000-8000-000000000204'), 0, 'other household event_participation hidden');
 
-with changed as (update public.event_participation set status='not_going' where member_id='20000000-0000-4000-8000-000000000204' returning 1) select is(count(*)::integer, 0, 'foreign event_participation update denied') from changed;
+select throws_ok($direct$update public.event_participation set status='not_going' where member_id='20000000-0000-4000-8000-000000000204'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
-with changed as (delete from public.event_participation where member_id='20000000-0000-4000-8000-000000000204' returning 1) select is(count(*)::integer, 0, 'foreign event_participation delete denied') from changed;
+select throws_ok($direct$delete from public.event_participation where member_id='20000000-0000-4000-8000-000000000204'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
 select is((select count(*)::integer from public.ride_participation where member_id='20000000-0000-4000-8000-000000000201'), 1, 'own ride_participation visible');
 
 select is((select count(*)::integer from public.ride_participation where member_id='20000000-0000-4000-8000-000000000204'), 0, 'other household ride_participation hidden');
 
-with changed as (update public.ride_participation set mode='none' where member_id='20000000-0000-4000-8000-000000000204' returning 1) select is(count(*)::integer, 0, 'foreign ride_participation update denied') from changed;
+select throws_ok($direct$update public.ride_participation set mode='none' where member_id='20000000-0000-4000-8000-000000000204'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
-with changed as (delete from public.ride_participation where member_id='20000000-0000-4000-8000-000000000204' returning 1) select is(count(*)::integer, 0, 'foreign ride_participation delete denied') from changed;
+select throws_ok($direct$delete from public.ride_participation where member_id='20000000-0000-4000-8000-000000000204'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
 select throws_ok($sql$select * from private.household_locations$sql$, '42501', null, 'exact locations not directly readable');
 
@@ -74,17 +74,17 @@ select is((select count(*)::integer from public.event_participation where member
 
 select is((select count(*)::integer from public.event_participation where member_id='20000000-0000-4000-8000-000000000201'), 0, 'other household event_participation hidden');
 
-with changed as (update public.event_participation set status='not_going' where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 0, 'foreign event_participation update denied') from changed;
+select throws_ok($direct$update public.event_participation set status='not_going' where member_id='20000000-0000-4000-8000-000000000201'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
-with changed as (delete from public.event_participation where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 0, 'foreign event_participation delete denied') from changed;
+select throws_ok($direct$delete from public.event_participation where member_id='20000000-0000-4000-8000-000000000201'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
 select is((select count(*)::integer from public.ride_participation where member_id='20000000-0000-4000-8000-000000000204'), 1, 'own ride_participation visible');
 
 select is((select count(*)::integer from public.ride_participation where member_id='20000000-0000-4000-8000-000000000201'), 0, 'other household ride_participation hidden');
 
-with changed as (update public.ride_participation set mode='none' where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 0, 'foreign ride_participation update denied') from changed;
+select throws_ok($direct$update public.ride_participation set mode='none' where member_id='20000000-0000-4000-8000-000000000201'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
-with changed as (delete from public.ride_participation where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 0, 'foreign ride_participation delete denied') from changed;
+select throws_ok($direct$delete from public.ride_participation where member_id='20000000-0000-4000-8000-000000000201'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
 select throws_ok($sql$select * from private.household_locations$sql$, '42501', null, 'exact locations not directly readable');
 
@@ -98,13 +98,13 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000001'::uuid, 'JWT subject matches fixture user');
 
-select lives_ok($sql$insert into public.event_participation(event_id,member_id,status) values ('20000000-0000-4000-8000-000000000611','20000000-0000-4000-8000-000000000201','going')$sql$, 'owner adds own attendance');
+select throws_ok($sql$insert into public.event_participation(event_id,member_id,status) values ('20000000-0000-4000-8000-000000000611','20000000-0000-4000-8000-000000000201','going')$sql$, '42501', null, 'Direct mutation denied: owner adds own attendance');
 
-with changed as (update public.event_participation set status='going' where event_id='20000000-0000-4000-8000-000000000611' and member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 1, 'owner updates own attendance') from changed;
+select throws_ok($direct$update public.event_participation set status='going' where event_id='20000000-0000-4000-8000-000000000611' and member_id='20000000-0000-4000-8000-000000000201'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
-with changed as (delete from public.event_participation where event_id='20000000-0000-4000-8000-000000000611' and member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 1, 'owner deletes own attendance') from changed;
+select throws_ok($direct$delete from public.event_participation where event_id='20000000-0000-4000-8000-000000000611' and member_id='20000000-0000-4000-8000-000000000201'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
-select throws_ok($sql$insert into public.event_participation(event_id,member_id,status) values ('20000000-0000-4000-8000-000000000611','20000000-0000-4000-8000-000000000204','going')$sql$, 'P0001', null, 'foreign attendance cannot be inserted');
+select throws_ok($sql$insert into public.event_participation(event_id,member_id,status) values ('20000000-0000-4000-8000-000000000611','20000000-0000-4000-8000-000000000204','going')$sql$, '42501', null, 'Direct mutation denied: foreign attendance cannot be inserted');
 
 with changed as (update public.groups set name='Forbidden' where id='20000000-0000-4000-8000-000000000301' returning 1) select is(count(*)::integer, 0, 'household owner is not group admin') from changed;
 
@@ -122,9 +122,9 @@ select is((current_user::text), 'authenticated', 'assertion executes as ordinary
 
 select is(auth.uid(), '20000000-0000-4000-8000-000000000003'::uuid, 'JWT subject matches fixture user');
 
-with changed as (update public.event_participation set status='going' where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 1, 'ordinary member can edit attendance') from changed;
+select throws_ok($direct$update public.event_participation set status='going' where member_id='20000000-0000-4000-8000-000000000201'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
-with changed as (update public.ride_participation set max_detour_minutes=20 where member_id='20000000-0000-4000-8000-000000000201' returning 1) select is(count(*)::integer, 1, 'ordinary member can edit ride preferences') from changed;
+select throws_ok($direct$update public.ride_participation set max_detour_minutes=20 where member_id='20000000-0000-4000-8000-000000000201'$direct$, '42501', null, 'Direct lifecycle mutation denied');
 
 reset role; set local role :"fixture_owner";
 
@@ -144,7 +144,7 @@ select is((select count(*)::integer from public.event_series where id='20000000-
 
 select is((select count(*)::integer from public.event_locations where id='20000000-0000-4000-8000-000000000501'), 0, 'outsider cannot discover event_locations');
 
-select throws_ok($sql$insert into public.event_participation(event_id,member_id,status) values ('20000000-0000-4000-8000-000000000610','20000000-0000-4000-8000-000000000206','going')$sql$, 'P0001', null, 'outsider cannot attend group event');
+select throws_ok($sql$insert into public.event_participation(event_id,member_id,status) values ('20000000-0000-4000-8000-000000000610','20000000-0000-4000-8000-000000000206','going')$sql$, '42501', null, 'Direct mutation denied: outsider cannot attend group event');
 
 reset role; set local role :"fixture_owner";
 
@@ -158,7 +158,7 @@ select is(auth.uid(), '20000000-0000-4000-8000-000000000008'::uuid, 'JWT subject
 
 with changed as (update public.groups set name='Admin edit' where id='20000000-0000-4000-8000-000000000301' returning 1) select is(count(*)::integer, 1, 'group administrator can edit group') from changed;
 
-select lives_ok($sql$insert into public.event_locations(group_id,name,created_by_user_id) values ('20000000-0000-4000-8000-000000000301','Admin destination','20000000-0000-4000-8000-000000000008')$sql$, 'group administrator creates destination');
+select throws_ok($sql$insert into public.event_locations(group_id,name,created_by_user_id) values ('20000000-0000-4000-8000-000000000301','Admin destination','20000000-0000-4000-8000-000000000008')$sql$, '42501', null, 'Direct mutation denied: group administrator creates destination');
 
 select is((select count(*)::integer from public.household_members where household_id='20000000-0000-4000-8000-000000000101'), 0, 'group admin has no household access');
 

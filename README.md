@@ -34,3 +34,5 @@ Household onboarding, ownership rules, invitation setup, and verification: [docs
 Group creation, joining, permissions, invitations, and verification: [docs/group-onboarding.md](docs/group-onboarding.md).
 
 Six-character invitation codes, short links, attempt limits, legacy-link compatibility, and manual verification: [docs/invitation-codes.md](docs/invitation-codes.md).
+
+Events, attendance, private household addresses, ride preferences, recurrence, and verification: [docs/events-and-rides.md](docs/events-and-rides.md).

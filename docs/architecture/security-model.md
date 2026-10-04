@@ -608,3 +608,7 @@ pnpm build
 ```
 
 and regenerate public database TypeScript types after schema changes.
+
+## Phase 2 controlled mutations
+
+Events, event series, group destinations, attendance, and ride preferences now reject direct API mutations, including column-level INSERT/UPDATE grants. Use `event_workflow` and `series_workflow`; these invoker interfaces call private implementations that validate identity, permissions, revisions, lifecycle state, and transportation integrity. Saved household addresses are read through `household_location_list` and managed through `event_workflow`, with no direct private-table grants. Preference history and historical address snapshots remain private. See [events and rides](../events-and-rides.md) for the active permission matrix and locking/verification behavior.

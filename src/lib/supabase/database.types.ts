@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           address_line_1: string | null
           address_line_2: string | null
+          archived_at: string | null
           city: string | null
           country_code: string
           created_at: string
@@ -28,12 +29,14 @@ export type Database = {
           name: string
           postal_code: string | null
           provider_place_id: string | null
+          revision: number
           state_region: string | null
           updated_at: string
         }
         Insert: {
           address_line_1?: string | null
           address_line_2?: string | null
+          archived_at?: string | null
           city?: string | null
           country_code?: string
           created_at?: string
@@ -44,12 +47,14 @@ export type Database = {
           name: string
           postal_code?: string | null
           provider_place_id?: string | null
+          revision?: number
           state_region?: string | null
           updated_at?: string
         }
         Update: {
           address_line_1?: string | null
           address_line_2?: string | null
+          archived_at?: string | null
           city?: string | null
           country_code?: string
           created_at?: string
@@ -60,6 +65,7 @@ export type Database = {
           name?: string
           postal_code?: string | null
           provider_place_id?: string | null
+          revision?: number
           state_region?: string | null
           updated_at?: string
         }
@@ -126,11 +132,16 @@ export type Database = {
           default_activity_start_time: string | null
           default_ready_to_depart_time: string | null
           default_required_arrival_time: string | null
+          departure_next_day: boolean
           group_id: string
           id: string
           location_id: string | null
           name: string
+          predecessor_series_id: string | null
           recurrence_rule: string
+          recurrence_spec: Json | null
+          request_id: string | null
+          revision: number
           series_end_date: string | null
           series_start_date: string
           status: string
@@ -144,11 +155,16 @@ export type Database = {
           default_activity_start_time?: string | null
           default_ready_to_depart_time?: string | null
           default_required_arrival_time?: string | null
+          departure_next_day?: boolean
           group_id: string
           id?: string
           location_id?: string | null
           name: string
+          predecessor_series_id?: string | null
           recurrence_rule: string
+          recurrence_spec?: Json | null
+          request_id?: string | null
+          revision?: number
           series_end_date?: string | null
           series_start_date: string
           status?: string
@@ -162,11 +178,16 @@ export type Database = {
           default_activity_start_time?: string | null
           default_ready_to_depart_time?: string | null
           default_required_arrival_time?: string | null
+          departure_next_day?: boolean
           group_id?: string
           id?: string
           location_id?: string | null
           name?: string
+          predecessor_series_id?: string | null
           recurrence_rule?: string
+          recurrence_spec?: Json | null
+          request_id?: string | null
+          revision?: number
           series_end_date?: string | null
           series_start_date?: string
           status?: string
@@ -188,6 +209,13 @@ export type Database = {
             referencedRelation: "event_locations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "event_series_predecessor_series_id_fkey"
+            columns: ["predecessor_series_id"]
+            isOneToOne: false
+            referencedRelation: "event_series"
+            referencedColumns: ["id"]
+          },
         ]
       }
       events: {
@@ -199,11 +227,16 @@ export type Database = {
           event_series_id: string | null
           group_id: string
           id: string
+          is_exception: boolean
           location_id: string | null
           name: string
+          original_local_date: string | null
           ready_to_depart_at: string | null
+          request_id: string | null
           required_arrival_at: string | null
+          revision: number
           status: string
+          timezone: string
           updated_at: string
         }
         Insert: {
@@ -214,11 +247,16 @@ export type Database = {
           event_series_id?: string | null
           group_id: string
           id?: string
+          is_exception?: boolean
           location_id?: string | null
           name: string
+          original_local_date?: string | null
           ready_to_depart_at?: string | null
+          request_id?: string | null
           required_arrival_at?: string | null
+          revision?: number
           status?: string
+          timezone?: string
           updated_at?: string
         }
         Update: {
@@ -229,11 +267,16 @@ export type Database = {
           event_series_id?: string | null
           group_id?: string
           id?: string
+          is_exception?: boolean
           location_id?: string | null
           name?: string
+          original_local_date?: string | null
           ready_to_depart_at?: string | null
+          request_id?: string | null
           required_arrival_at?: string | null
+          revision?: number
           status?: string
+          timezone?: string
           updated_at?: string
         }
         Relationships: [
@@ -701,12 +744,13 @@ export type Database = {
           created_at: string
           disabled_at: string | null
           event_id: string
-          household_location_id: string
+          household_location_id: string | null
           id: string
           leg: string
           max_detour_minutes: number | null
           member_id: string
           mode: string
+          needs_reconfirmation: boolean
           updated_at: string
         }
         Insert: {
@@ -716,12 +760,13 @@ export type Database = {
           created_at?: string
           disabled_at?: string | null
           event_id: string
-          household_location_id: string
+          household_location_id?: string | null
           id?: string
           leg: string
           max_detour_minutes?: number | null
           member_id: string
           mode: string
+          needs_reconfirmation?: boolean
           updated_at?: string
         }
         Update: {
@@ -731,12 +776,13 @@ export type Database = {
           created_at?: string
           disabled_at?: string | null
           event_id?: string
-          household_location_id?: string
+          household_location_id?: string | null
           id?: string
           leg?: string
           max_detour_minutes?: number | null
           member_id?: string
           mode?: string
+          needs_reconfirmation?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -835,6 +881,14 @@ export type Database = {
         Args: { p_household_id: string }
         Returns: undefined
       }
+      event_workflow: {
+        Args: { p_command: string; p_data: Json }
+        Returns: string
+      }
+      household_location_list: {
+        Args: { p_household_id: string }
+        Returns: Json
+      }
       inspect_invitation: {
         Args: { p_kind: string; p_token_hash: string }
         Returns: Json
@@ -878,6 +932,7 @@ export type Database = {
         Args: { p_household_id: string; p_invitation_id: string }
         Returns: undefined
       }
+      series_workflow: { Args: { p_data: Json }; Returns: string }
     }
     Enums: {
       [_ in never]: never

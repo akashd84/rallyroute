@@ -8,4 +8,6 @@
 | **Phase 5 — Connections** | Request/accept/decline connection, controlled sharing of contact/location information |
 | **Phase 6 — Carpools** | Turn accepted connections into actual carpools and assign rides/drivers |
 | **Phase 7 — Pilot** | Controlled real-user pilot, measurement, feedback, fixes before broader launch |
-Phase 1 household onboarding and access lifecycle are **complete**. Automated checks passed, and the user confirmed all eight manual two-account Supabase Cloud browser smoke-test steps passed on 2026-10-04. Results are recorded in [household onboarding](../household-onboarding.md). Group creation/joining and group-invitation UI remain to complete Phase 1.
+Phase 1 household onboarding and access lifecycle are **complete**. Automated checks passed, and the user confirmed all eight manual two-account Supabase Cloud browser smoke-test steps passed on 2026-10-04. Results are recorded in [household onboarding](../household-onboarding.md). Group creation/joining and invitation UI are implemented. Outstanding group/manual code-entry verification remains pending; short-link testing passed.
+
+Phase 2 events, attendance, ride preferences, and recurrence are implemented on Dev. Automated checks passed (147 unit tests, 26 mocked browser tests, native and linked database suites twice, four concurrency checks, lint/build, and clean linked schema lint). The user is running the manual two-household Cloud check. **Phase 2 is not yet complete.** See [events and rides](../events-and-rides.md).

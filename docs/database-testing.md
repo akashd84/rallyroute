@@ -105,3 +105,9 @@ The group onboarding suite adds controlled creation retries, separate Group Owne
 ## Invitation-code update
 
 The code suite verifies ordinary-role access, removal of unthrottled RPC entrypoints, private counter denial, hash collisions, shared 10/minute and 50/hour windows, synthetic boundary timestamps, retry timing, counted failures, provider-failure rollback, and successful acceptance. Existing household/group suites now assert guarded structured outcomes alongside actual data changes and unchanged rejection snapshots. The disposable serialization runner also checks simultaneous attempts at the shared cap. See [invitation codes](invitation-codes.md) for current execution results; Cloud fixtures remain transaction-scoped and never seed/reset Dev.
+
+## Phase 2 checks
+
+`events_phase2.test.sql` covers controlled event/attendance/ride/location workflows and cross-household privacy; `event_series.test.sql` covers recurring patterns and successor-series replacement. Legacy direct-mutation cases now assert denied grants; successful writes use controlled RPCs.
+
+For supplemental overlapping-transaction checks, apply migrations to a disposable loopback PostgreSQL database named `rallyroute_test_*`, set `RALLYROUTE_DISPOSABLE_DATABASE_URL` securely, and run `node scripts/test-events-serialization.mjs`. It verifies event-edit/ride-save, cancellation/attendance-save, household-departure/ride-save, and duplicate-series races, using ordinary authenticated clients. It refuses Cloud targets and cleans up its synthetic fixture namespace. Linked suites remain transaction-scoped and never seed or reset Cloud.

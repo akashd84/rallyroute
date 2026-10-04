@@ -20,7 +20,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
   const { data: invitations, error: inviteError } = role ? await context.supabase.from("group_invitations").select("id, invite_type, invited_email, status, use_count, max_uses, expires_at").eq("group_id", id).order("created_at", { ascending: false }) : { data: [], error: null };
   const loadError = admins.error || memberships.error || houses.error || inviteError;
   return <main className="mx-auto w-full max-w-3xl p-6"><Link href="/groups" className="underline text-teal-800">Your groups</Link>
-    <h1 className="my-6 text-3xl font-semibold">{group.name}</h1><p className="capitalize">{group.group_type}</p><p className="my-3">{group.description}</p><p>Your group role: {role === "owner" ? "Group Owner" : role ? "Group Admin" : "Group Member"}</p>
+    <p className="mt-4"><Link className="underline" href={`/groups/${id}/events`}>Events and destinations</Link></p><h1 className="my-6 text-3xl font-semibold">{group.name}</h1><p className="capitalize">{group.group_type}</p><p className="my-3">{group.description}</p><p>Your group role: {role === "owner" ? "Group Owner" : role ? "Group Admin" : "Group Member"}</p>
     {loadError ? <p role="alert" className="mt-4">Group details could not be loaded. Reload to try again.</p> : <>
       <h2 className="mt-6 text-xl font-semibold">Your participating households</h2><ul>{ownHouses.map(h => <li key={h.id}><Link href={`/households/${h.id}`} className="underline">{h.display_name ?? "Household"}</Link></li>)}</ul>
       {!ownHouses.length && <p>You administer this group independently of household membership.</p>}

@@ -5,7 +5,7 @@ import { HouseholdForm, HouseholdSelector, NameFields } from "../forms";
 export const dynamic = "force-dynamic";
 export default async function HouseholdPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success) return <main className="p-6"><h1>Household unavailable</h1><Link href="/account">Your account</Link></main>;
+  if (!z.string().uuid().safeParse(id).success) return <main className="p-6"><p className="my-4"><Link className="underline" href={`/households/${id}/locations`}>Pickup and dropoff addresses</Link></p><h1>Household unavailable</h1><Link href="/account">Your account</Link></main>;
   const { household, user, supabase, access, participants, invitations, loadError } = await householdContext(id);
   if (!household || loadError) return <main className="p-6"><h1>Household unavailable</h1><p role="alert">You may no longer have access. Return to your account or reload to try again.</p><Link href="/account">Your account</Link></main>;
   const ownRole = access.find(a => a.user_id === user.id)?.role;
