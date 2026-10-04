@@ -48,7 +48,8 @@ Ordinary-role execution of the old public/private `preview_group_invitation`, `r
 - Linked Dev ordinary-role checks passed twice: **511 assertions across seven suites per run**, including **62 invitation-code assertions**. Fixtures rolled back; **zero synthetic accounts remained**.
 - Four targeted ordinary-role native concurrency checks passed: final invitation use, joining during Owner demotion, joining during archival, and simultaneous attempts at the shared minute cap. The loopback-only disposable runner cleans up its committed fixtures; it never targets Cloud.
 - `pnpm lint`, **117 Vitest tests**, **23 mocked Playwright tests**, and `pnpm build` passed. Linked `public,private` schema lint reported no errors or warnings; public types were regenerated.
-- Manual two-account Supabase Cloud browser smoke test: **pending at the user’s request**. Mocked browser tests do not establish live Cloud browser integration. Roadmap completion remains unchanged.
+- Manual short-link testing: **passed**, reported by the user on 2026-10-04. The report confirms short links; it does not specify invitation kinds or individual checklist steps.
+- Remaining manual verification, including manual code entry and the full two-account checklist: **pending**. Mocked browser tests do not establish live Cloud browser integration. Roadmap completion remains unchanged.
 
 Run `pnpm lint`, `pnpm test`, `pnpm test:e2e`, `pnpm build`, `pnpm test:db:linked` twice, and `pnpm supabase db lint --linked --schema public,private`. See [database testing](database-testing.md) for secure connection setup and [group onboarding](group-onboarding.md) for the disposable concurrency runner. Docker is optional for linked verification.
 
