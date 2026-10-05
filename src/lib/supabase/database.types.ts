@@ -14,6 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      carpools: {
+        Row: {
+          accepted_at: string | null
+          closed_at: string | null
+          connection_id: string
+          created_at: string
+          group_id: string
+          id: string
+          recipient_household_id: string
+          request_id: string
+          requester_household_id: string
+          revision: number
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          closed_at?: string | null
+          connection_id: string
+          created_at?: string
+          group_id: string
+          id?: string
+          recipient_household_id: string
+          request_id: string
+          requester_household_id: string
+          revision?: number
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          closed_at?: string | null
+          connection_id?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          recipient_household_id?: string
+          request_id?: string
+          requester_household_id?: string
+          revision?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carpools_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "household_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carpools_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carpools_recipient_household_id_fkey"
+            columns: ["recipient_household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carpools_requester_household_id_fkey"
+            columns: ["requester_household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_locations: {
         Row: {
           address_line_1: string | null
@@ -541,6 +612,86 @@ export type Database = {
           },
         ]
       }
+      household_connections: {
+        Row: {
+          accepted_at: string | null
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          event_id: string
+          expires_at: string
+          group_id: string
+          id: string
+          recipient_household_id: string
+          requested_by: string | null
+          requester_household_id: string
+          responded_by: string | null
+          revision: number
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          event_id: string
+          expires_at?: string
+          group_id: string
+          id?: string
+          recipient_household_id: string
+          requested_by?: string | null
+          requester_household_id: string
+          responded_by?: string | null
+          revision?: number
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          event_id?: string
+          expires_at?: string
+          group_id?: string
+          id?: string
+          recipient_household_id?: string
+          requested_by?: string | null
+          requester_household_id?: string
+          responded_by?: string | null
+          revision?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_connections_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_connections_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_connections_recipient_household_id_fkey"
+            columns: ["recipient_household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_connections_requester_household_id_fkey"
+            columns: ["requester_household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_invitation_redemptions: {
         Row: {
           household_id: string
@@ -841,6 +992,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      carpool_action: {
+        Args: { p_command: string; p_data: Json }
+        Returns: Json
+      }
       complete_household_onboarding: {
         Args: {
           p_first_name: string
@@ -848,6 +1003,10 @@ export type Database = {
           p_last_name: string
         }
         Returns: string
+      }
+      connection_action: {
+        Args: { p_command: string; p_data: Json }
+        Returns: Json
       }
       create_group: {
         Args: {
@@ -897,6 +1056,10 @@ export type Database = {
         Args: { p_command: string; p_data: Json }
         Returns: string
       }
+      get_carpool: {
+        Args: { p_carpool_id: string; p_household_id: string }
+        Returns: Json
+      }
       household_location_list: {
         Args: { p_household_id: string }
         Returns: Json
@@ -906,6 +1069,8 @@ export type Database = {
         Returns: Json
       }
       leave_household: { Args: { p_household_id: string }; Returns: undefined }
+      list_carpools: { Args: { p_household_id: string }; Returns: Json }
+      list_connections: { Args: { p_household_id: string }; Returns: Json }
       match_candidates: {
         Args: {
           p_after?: string
@@ -964,6 +1129,20 @@ export type Database = {
       remove_household_member: {
         Args: { p_household_id: string; p_user_id: string }
         Returns: undefined
+      }
+      request_connection: {
+        Args: {
+          p_event_id: string
+          p_fingerprint: string
+          p_household_id: string
+          p_leg: string
+          p_max_distance: number
+          p_other_household_id: string
+          p_pair_key: string
+          p_phone?: string
+          p_user_id: string
+        }
+        Returns: Json
       }
       revoke_group_invitation: {
         Args: { p_group_id: string; p_invitation_id: string }

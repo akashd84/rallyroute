@@ -6,7 +6,9 @@ import Link from "next/link";
 import { z } from "zod";
 import { accountContext } from "@/lib/households/context";
 import { displayTime, localInput } from "@/lib/events/time";
+import { connectionsSchema } from "@/lib/connections/types";
 import { MatchPanel } from "@/app/events/match-panel";
+import { CarpoolAssignments } from "@/app/events/carpool-assignments";
 import { RideFields } from "@/app/events/ride-fields";
 import { EventForm } from "@/app/events/forms";
 import { TimezoneField } from "@/app/events/timezone-field";
@@ -27,7 +29,7 @@ export default async function EventPage({
 }) {
   const { id, eventId } = await params;
   const query = await searchParams;
-  const { supabase, user } = await accountContext();
+  const { supabase, user, profile } = await accountContext();
   if (![id, eventId].every((v) => z.string().uuid().safeParse(v).success))
     return <main>Event unavailable</main>;
   const { data: event, error } = await supabase
@@ -37,6 +39,7 @@ export default async function EventPage({
     .eq("group_id", id)
     .maybeSingle();
   if (error || !event) return <main>Event unavailable</main>;
+  const group = await supabase.from("groups").select("name").eq("id", id).maybeSingle();
   const [admins, houses, memberships, destinations] = await Promise.all([
     supabase
       .from("group_admins")
@@ -95,6 +98,9 @@ export default async function EventPage({
         { data: [], error: null },
         { data: [], error: null },
       ];
+  const connectionResult = household ? await supabase.rpc("list_connections", { p_household_id: household.id }) : { data: [], error: null };
+  const parsedConnections = connectionsSchema.safeParse(connectionResult.data);
+  const connectionStates = !connectionResult.error && parsedConnections.success ? parsedConnections.data.filter(c => c.status === "pending" || c.status === "accepted").map(c => ({ otherHouseholdId: c.otherHouseholdId, status: c.status, incoming: c.incoming })) : [];
   const savedLocations = locationsSchema.safeParse(locations.data);
   const series = event.event_series_id
     ? await supabase
@@ -123,6 +129,7 @@ export default async function EventPage({
         Group events
       </Link>
       <h1 className="my-6 text-3xl">{event.name}</h1>
+      {household && <CarpoolAssignments householdId={household.id} eventId={eventId} />}
       <p>
         {event.status} — {event.timezone}
       </p>
@@ -223,6 +230,11 @@ export default async function EventPage({
                 householdId={household.id}
                 leg={leg}
                 timezone={event.timezone}
+                eventName={event.name}
+                householdName={household.display_name ?? "Your household"}
+                connections={connectionStates}
+                groupName={group.data?.name}
+                contact={{ name: [profile?.first_name, profile?.last_name].filter(Boolean).join(" "), email: user.email ?? "" }}
                 readiness={
                   !future || Date.parse(anchor) <= Date.now() ? "past"
                     : ready ? "ready"

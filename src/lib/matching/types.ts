@@ -8,6 +8,7 @@ export type MatchOpportunity = {
   addedDurationSeconds: number;
 };
 export type MatchHousehold = {
+  requestProof?: string;
   id: string;
   name: string;
   opportunities: MatchOpportunity[];

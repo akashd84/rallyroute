@@ -1,5 +1,7 @@
 # RallyRoute Security Model
 
+Phase 6 [agreed carpools](../carpools.md) uses household-scoped metadata and private participant/approval records. Controlled projections release only explicitly selected names and ride roles after carpool acceptance. Both households approve the same ride revision; database constraints prevent duplicate confirmed assignments. Connection and participation lifecycle changes persist revocation, and carpool acceptance does not extend pickup-address consent.
+
 ## Purpose
 
 RallyRoute handles sensitive information about households, transportation routines, and exact pickup locations. Security and privacy are therefore product requirements, not optional implementation details.
@@ -506,9 +508,9 @@ Before mutual connection, do not expose by default:
 
 ---
 
-## Future Connection Privacy
+## Connection Privacy
 
-A later Connection workflow should explicitly control when additional information becomes visible.
+The Phase 5 Connection workflow explicitly controls when additional information becomes visible. See [connections and controlled sharing](../connections.md) for the implementation and consent lifecycle.
 
 Mutual connection acceptance may unlock selected contact/pickup details according to product rules.
 

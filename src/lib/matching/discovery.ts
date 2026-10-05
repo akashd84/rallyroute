@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { encodeConnectionProof } from "@/lib/connections/proof";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { detourInputSchema, evaluateResolvedDetour } from "@/lib/routing/route-detour";
@@ -61,7 +62,7 @@ export async function discoverMatches(request: unknown): Promise<MatchResult> {
     for (const saved of retained) {
       const c = byKey.get(saved.key)!;
       let household = groups.get(c.other_household_id);
-      if (!household) { household={ id: c.other_household_id, name: c.other_household_name, opportunities: [] }; groups.set(household.id,household); }
+      if (!household) { household={ id: c.other_household_id, name: c.other_household_name, opportunities: [], requestProof: encodeConnectionProof({ user: context.user, household: context.household, other: c.other_household_id, event: context.event, leg: context.leg, pair: c.pair_key, fingerprint: c.fingerprint, distance }) }; groups.set(household.id,household); }
       household.opportunities.push({
         // Stable opaque tie-breaker: counterpart ride IDs are never serialized.
         id: createHash("sha256").update(`${context.event}:${context.household}:${context.leg}:${c.pair_key}`).digest("hex"),

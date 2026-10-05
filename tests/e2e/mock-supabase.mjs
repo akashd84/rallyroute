@@ -10,6 +10,8 @@ const budgets = new Map();
 let geocodingMode = "precise";
 let matchingMode = "success";
 const matchingRows = [];
+const connections = [];
+const carpools = [];
 const groups = new Map(); const groupAdmins = []; const memberships = []; const groupInvites = []; const groupRequests = new Map();
 const houses = new Map(); const people = []; const access = []; const invites = []; const requests = new Map();
 function setup(email) {
@@ -65,7 +67,7 @@ const server = http.createServer(async (req, res) => {
     if (claims.email === "signout-error@example.com") return send(422, { code: "unexpected_failure", msg: "private error" });
     return send(200, {});
   }
-  if (url.pathname === "/test/reset" && req.method === "POST") { geocodingMode = "precise"; matchingMode = "success"; matchingRows.splice(0); events.splice(0); destinations.splice(0); locations.splice(0); attendance.splice(0); rides.splice(0); series.splice(0); budgets.clear(); groups.clear(); groupAdmins.splice(0); memberships.splice(0); groupInvites.splice(0); groupRequests.clear(); houses.clear(); people.splice(0); access.splice(0); invites.splice(0); requests.clear(); return send(200, {}); }
+  if (url.pathname === "/test/reset" && req.method === "POST") { carpools.splice(0); geocodingMode = "precise"; matchingMode = "success"; connections.splice(0); matchingRows.splice(0); events.splice(0); destinations.splice(0); locations.splice(0); attendance.splice(0); rides.splice(0); series.splice(0); budgets.clear(); groups.clear(); groupAdmins.splice(0); memberships.splice(0); groupInvites.splice(0); groupRequests.clear(); houses.clear(); people.splice(0); access.splice(0); invites.splice(0); requests.clear(); return send(200, {}); }
   if (url.pathname === "/test/event-member" && req.method === "POST") { access.filter(a=>a.user_id===defaultId).forEach(a=>a.role="member"); for(let i=groupAdmins.length-1;i>=0;i--)if(groupAdmins[i].user_id===defaultId)groupAdmins.splice(i,1); return send(200,{}); }
   if (url.pathname === "/test/budget" && req.method === "POST") { budgets.set(idFor(body.email), { minute: Date.now(), hour: Date.now(), minuteCount: body.minuteCount ?? 0, hourCount: body.hourCount ?? 0 }); return send(200, {}); }
   if (url.pathname === "/test/legacy" && req.method === "POST") {
@@ -102,9 +104,38 @@ const server = http.createServer(async (req, res) => {
     rides.forEach(r=>{r.needs_reconfirmation=matchingMode==="reconfirm";r.disabled_at=r.needs_reconfirmation ? new Date().toISOString() : null;r.mode=matchingMode==="missing"?"none":"either";});
     return send(200,{url:`/groups/${events[0].group_id}/events/${events[0].id}?household=${defaultHousehold}`});
   }
+  if (url.pathname === "/test/connections" && req.method === "POST") {
+    const other="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", recipient=idFor("recipient@example.com");
+    if (!houses.has(other)) {
+      houses.set(other,{id:other,display_name:"Compatible household",archived_at:null});
+      access.push({household_id:other,user_id:recipient,role:"member"});
+      people.push({id:randomUUID(),household_id:other,linked_user_id:recipient,first_name:"Alex",last_name:"Example",member_type:"adult",archived_at:null});
+      memberships.push({group_id:events[0].group_id,household_id:other,status:"active"});
+      locations.push({id:"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",household_id:defaultHousehold,label:"Home pickup",address_line_1:"Private test address",address_line_2:null,city:"Atlanta",state_region:"GA",postal_code:"30301",country_code:"US",revision:1,archived_at:null});
+    }
+    if (body.expire) connections.filter(c=>c.status==="pending").forEach(c=>c.expiresAt=new Date(0).toISOString());
+    if (body.changeAddress) { locations[0].revision++; connections.forEach(c=>c.pickups=[]); }
+    if (body.leave) connections.forEach(c=>{c.status="disconnected";c.revision++;});
+    return send(200,{householdId:defaultHousehold,recipientHouseholdId:other,eventId:events[0].id});
+  }
+  if (url.pathname === "/test/carpools" && req.method === "POST") {
+    const other="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    for(const p of people.filter(p=>p.household_id===other))if(!attendance.some(a=>a.member_id===p.id))attendance.push({event_id:events[0].id,member_id:p.id,status:"going"});
+    if(!connections.length)connections.push({id:randomUUID(),requester:defaultHousehold,recipient:other,status:"accepted",revision:2,groupId:events[0].group_id,groupName:"Match club",eventName:"Match event",createdAt:new Date().toISOString(),expiresAt:"2099-01-01T00:00:00Z",contacts:[],pickups:[]});
+    if(body.invalidate)for(const c of carpools)for(const r of c.rides){r.status="needs_review";r.revision++;r.approvals=[];r.reason="Event changed; review and approve again";}
+    return send(200,{});
+  }
   if (url.pathname.startsWith("/rest/v1/")) {
     // Secret API keys are opaque, not JWTs. Handle privileged mock RPCs first.
     if (req.headers.apikey === "sb_secret_mock-key") {
+      if (url.pathname === "/rest/v1/rpc/request_connection") {
+        if(!access.some(a=>a.user_id===body.p_user_id&&a.household_id===body.p_household_id))return send(200,{status:"unavailable"});
+        const existing=connections.find(c=>["pending","accepted"].includes(c.status)&&[c.requester,c.recipient].includes(body.p_household_id)&&[c.requester,c.recipient].includes(body.p_other_household_id));
+        if(existing)return send(200,{status:"existing",id:existing.id,incoming:existing.recipient===body.p_household_id});
+        if(!matchingRows.some(c=>c.pair_key===body.p_pair_key&&c.fingerprint===body.p_fingerprint))return send(200,{status:"stale"});
+        const c={id:randomUUID(),requester:body.p_household_id,recipient:body.p_other_household_id,status:"pending",revision:1,groupId:events[0].group_id,groupName:"Match club",eventName:"Match event",createdAt:new Date().toISOString(),expiresAt:new Date(Date.now()+7*86400000).toISOString(),contacts:[{householdId:body.p_household_id,userId:body.p_user_id,name:"Alex Example",email:"adult@example.com",phone:body.p_phone||null}],pickups:[]};
+        connections.push(c);return send(200,{status:"ok",id:c.id});
+      }
       if (url.pathname === "/rest/v1/rpc/match_candidates") {
         const house=houses.get(body.p_household_id);
         if (!house || !access.some(a=>a.household_id===house.id && a.user_id===body.p_user_id)) return send(403,{code:"42501",message:"private error"});
@@ -174,6 +205,74 @@ const server = http.createServer(async (req, res) => {
       const denied = () => send(400, { code: "22023", message: "private database details" });
       if (rpc === "provider_budget_acquire") return send(200, { status: "ok" });
       if (rpc === "authorize_location_geocoding") return send(200, true);
+      const projectCarpool=(c,householdId)=>({id:c.id,connectionId:c.connectionId,groupId:c.groupId,groupName:"Match club",status:c.status,revision:c.revision,incoming:c.recipient===householdId,createdAt:c.createdAt,otherHouseholdName:houses.get(c.requester===householdId?c.recipient:c.requester)?.display_name??"Household",rides:c.rides.map(r=>({id:r.id,eventId:r.eventId,eventName:"Match event",timezone:"America/New_York",leg:r.leg,anchorAt:r.anchorAt,status:r.status,revision:r.revision,reason:r.reason,availableSeats:r.availableSeats,driverOwn:r.driverHouseholdId? r.driverHouseholdId===householdId:null,eventRevision:1,participants:r.participants.filter(p=>c.status==="accepted"||p.householdId===householdId).map(p=>({id:p.id,name:p.name,role:p.role,own:p.householdId===householdId})),ownApproved:r.approvals.includes(householdId),otherApproved:r.approvals.some(h=>h!==householdId)}))});
+      if(["list_carpools","get_carpool"].includes(rpc)){
+        if(!ownHouses().includes(hid))return denied();
+        const pools=carpools.filter(c=>[c.requester,c.recipient].includes(hid));
+        return send(200,rpc==="list_carpools"?pools.map(c=>projectCarpool(c,hid)):pools.find(c=>c.id===body.p_carpool_id)?projectCarpool(pools.find(c=>c.id===body.p_carpool_id),hid):null);
+      }
+      if(rpc==="carpool_action"){
+        const d=body.p_data,command=body.p_command;
+        if(!ownHouses().includes(d.householdId))return send(200,{status:"unavailable"});
+        let c=carpools.find(c=>c.id===d.carpoolId);
+        if(command==="create"){
+          const x=connections.find(x=>x.id===d.connectionId&&x.status==="accepted"&&[x.requester,x.recipient].includes(d.householdId));
+          if(!x)return send(200,{status:"unavailable"});
+          c=carpools.find(c=>c.connectionId===x.id&&["pending","accepted"].includes(c.status));
+          if(c)return send(200,{status:"existing",id:c.id});
+          c={id:randomUUID(),connectionId:x.id,groupId:x.groupId,requester:d.householdId,recipient:x.requester===d.householdId?x.recipient:x.requester,status:"pending",revision:1,createdAt:new Date().toISOString(),rides:[]};carpools.push(c);
+        }else{
+          if(!c||![c.requester,c.recipient].includes(d.householdId))return send(200,{status:"unavailable"});
+          if(["accept","decline","close"].includes(command)){
+            if(c.revision!==d.revision)return send(200,{status:"conflict"});
+            c.status={accept:"accepted",decline:"declined",close:"closed"}[command];c.revision++;
+            if(command==="close")c.rides.forEach(r=>{r.status="canceled";r.approvals=[];});
+          }else if(command==="propose"){
+            c.rides.push({id:randomUUID(),eventId:d.eventId,leg:d.leg,anchorAt:d.anchorAt,status:"proposed",revision:1,reason:null,availableSeats:null,driverHouseholdId:null,participants:[],approvals:[]});
+          }else{
+            const r=c.rides.find(r=>r.id===d.rideId);
+            if(!r||r.revision!==d.revision)return send(200,{status:"conflict"});
+            if(command==="approve"){
+              if(!r.participants.some(p=>p.role==="driver")||!r.participants.some(p=>p.role==="rider")||r.participants.filter(p=>p.role==="rider").length>r.availableSeats)return send(200,{status:"invalid_ride"});
+              if(!r.approvals.includes(d.householdId))r.approvals.push(d.householdId);
+              if(r.approvals.length===2)r.status="confirmed";
+            }else{
+              if(command==="driver"){
+                r.participants.forEach(p=>{if(p.role==="driver")p.role="rider";});const p=people.find(p=>p.id===d.driverMemberId);
+                r.participants=r.participants.filter(p=>p.id!==d.driverMemberId);r.participants.push({id:p.id,name:`${p.first_name} ${p.last_name}`,householdId:d.householdId,role:"driver"});r.driverHouseholdId=d.householdId;r.availableSeats=d.availableSeats;
+              }else if(command==="participants"){
+                const driver=r.participants.find(p=>p.role==="driver");r.participants=r.participants.filter(p=>p.householdId!==d.householdId);
+                for(const mid of d.memberIds){const p=people.find(p=>p.id===mid);r.participants.push({id:mid,name:`${p.first_name} ${p.last_name}`,householdId:d.householdId,role:driver?.id===mid?"driver":"rider"});}
+              }else if(command==="time")r.anchorAt=d.anchorAt;
+              else if(command==="clear_driver"){r.participants.forEach(p=>p.role="rider");r.driverHouseholdId=null;r.availableSeats=null;}
+              r.status=command==="cancel"?"canceled":"proposed";r.revision++;r.approvals=[];
+            }
+          }
+        }
+        return send(200,{status:"ok",id:c.id});
+      }
+      if (rpc === "list_connections") {
+        if(!ownHouses().includes(hid))return denied();
+        return send(200,connections.filter(c=>[c.requester,c.recipient].includes(hid)).map(c=>{
+          if(c.status==="pending"&&Date.parse(c.expiresAt)<=Date.now()){c.status="expired";c.revision++;}
+          return {id:c.id,status:c.status,revision:c.revision,incoming:c.recipient===hid,otherHouseholdId:c.requester===hid?c.recipient:c.requester,eventTimezone:"America/New_York",otherHouseholdName:houses.get(c.requester===hid?c.recipient:c.requester)?.display_name??"Household",groupId:c.groupId,groupName:c.groupName,eventName:c.eventName,createdAt:c.createdAt,expiresAt:c.expiresAt,
+          contacts:c.status==="accepted"?c.contacts.map(t=>({own:t.householdId===hid,editable:t.userId===id,name:t.name,email:t.email,phone:t.phone})):[],
+          pickups:c.status==="accepted"?c.pickups.map(p=>({id:p.id,own:p.householdId===hid,eventName:p.eventName,leg:p.leg,expiresAt:p.expiresAt,timezone:p.timezone,label:p.label,address_line_1:p.address_line_1,address_line_2:p.address_line_2,city:p.city,state_region:p.state_region,postal_code:p.postal_code,country_code:p.country_code})):[]};
+        }));
+      }
+      if (rpc === "connection_action") {
+        const d=body.p_data,command=body.p_command,c=connections.find(c=>c.id===d.connectionId);
+        if(!c||!ownHouses().includes(d.householdId)||![c.requester,c.recipient].includes(d.householdId))return send(200,{status:"unavailable"});
+        if(["accept","decline"].includes(command)&&c.recipient!==d.householdId||command==="withdraw"&&c.requester!==d.householdId)return send(200,{status:"unavailable"});
+        const target={accept:"accepted",decline:"declined",withdraw:"withdrawn",disconnect:"disconnected"}[command];
+        if(target){if(c.status===target)return send(200,{status:"ok",id:c.id});if(c.revision!==d.revision||c.status!==(command==="disconnect"?"accepted":"pending"))return send(200,{status:"conflict"});c.status=target;c.revision++;if(command==="accept")c.contacts.push({householdId:d.householdId,userId:id,name:"Alex Example",email,phone:d.phone||null});}
+        else if(c.status!=="accepted")return send(200,{status:"conflict"});
+        else if(command==="contact"){const t=c.contacts.find(t=>t.householdId===d.householdId&&t.userId===id);if(!t)return send(200,{status:"unavailable"});t.phone=d.phone||null;}
+        else if(command==="share") {const l=locations.find(l=>l.id===d.locationId&&l.household_id===d.householdId),e=events.find(e=>e.id===d.eventId);if(!l||!e||l.revision!==d.locationRevision||e.revision!==d.eventRevision)return send(200,{status:"conflict"});c.pickups=c.pickups.filter(p=>p.householdId!==d.householdId||p.eventId!==d.eventId||p.leg!==d.leg);c.pickups.push({...l,id:randomUUID(),householdId:d.householdId,eventId:e.id,eventName:e.name,leg:d.leg,timezone:e.timezone,expiresAt:d.leg==="to_event"?e.required_arrival_at:e.ready_to_depart_at});}
+        else if(command==="revoke"){const p=c.pickups.find(p=>p.id===d.shareId&&p.householdId===d.householdId);if(!p)return send(200,{status:"unavailable"});c.pickups=c.pickups.filter(p=>p.id!==d.shareId);}
+        else return denied();
+        return send(200,{status:"ok",id:c.id});
+      }
       if (rpc === "household_location_list") return ownHouses().includes(hid) ? send(200,locations.filter(l=>l.household_id===hid)) : denied();
       if (rpc === "event_workflow") {
         const d=body.p_data,c=body.p_command; const ev=events.find(e=>e.id===d.eventId);

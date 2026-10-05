@@ -1,5 +1,7 @@
 # Database fixtures and authorization tests
 
+Phase 6 verification and opt-in real Dev browser/concurrency commands are documented in [agreed carpools](carpools.md). Its 63 linked SQL assertions cover household authorization, consent, adult drivers, capacity, approvals, stale revisions and persistent lifecycle invalidation. The six-suite Phase 6 regression subset passes 308 assertions; all fixture SQL rolls back.
+
 These tests exercise real PostgreSQL grants, RLS, and controlled functions. Vitest and mocked browser tests do not replace them. The database suite is separate from `pnpm test`.
 
 ## Linked development verification
@@ -151,3 +153,11 @@ RALLYROUTE_TEST_PHASE4_BROWSER=1 pnpm exec playwright test --config playwright.l
 The API harness resolves known candidates through rollback-only linked SQL fixtures, simulates Auth identity and discovery snapshots, then uses actual Valhalla and private cache/control RPCs. It verifies both legs, detour exclusions, repeated-cache reuse without provider HTTP, and changed-snapshot rejection. The separate browser test uses real Supabase Auth and real discovery RPCs with randomly namespaced disposable fixture IDs and public Georgia points. It generates a token without sending email, checks pre-connection response privacy, repeats both-leg searches, invalidates counterpart preferences, and cleans up its isolated group/households/accounts. Successful normalized route cache entries and shared routing usage counters remain; global counters are never reset.
 
 Phase 4 verification on 2026-10-05 passed: 237 ordinary unit tests (six opt-in live tests skipped in that run), 182 linked assertions across the four relevant SQL suites, eight affected mocked browser cases, one real-provider matching integration case, one real-auth Dev browser case, TypeScript, lint, production build and clean linked `public,private` schema lint. Cleanup confirmed zero remaining Phase 4 test accounts and zero reserved-namespace rollback households. No commits or pushes were made.
+
+## Phase 5 connections verification
+
+`phase5_connections.test.sql` adds 63 ordinary-role/controlled-workflow assertions: service-only creation, fingerprint staleness, household Member authority, pending privacy, explicit RPC consent, acceptance without a current original match, repeated transitions, private-table denial, contact ownership, event-specific pickup sharing, recipient mutation denial, edit/archive/cancellation/expiry invalidation, and persistent group/contact-account departure revocation.
+
+The relevant linked regression subset passes **245 assertions** across connection, matching, event, geographic-routing, and provider-control suites. All SQL fixtures roll back. `tests/connections.test.ts` adds 25 unit checks for encrypted request proofs, context/expiry binding, validated and authenticated actions, explicit consent, outcome safety, and phone validation. All **262 ordinary unit tests** pass; six existing opt-in live tests remain skipped in that ordinary run.
+
+All **34 mocked browser tests** pass. The separate Phase 5 real-auth Dev browser smoke test verifies two accounts, actual match/request/accept UI, pending privacy, both-direction pickup sharing, edit invalidation, withdrawal, disconnect, group leave/rejoin, and concurrent request/acceptance. Disposable fixture cleanup asserts zero remaining test identities. Lint, TypeScript, production build, regenerated public types, and linked `public,private` schema lint pass. No Cloud seed/reset, global provider-counter reset, commit, push, or production deployment was performed. User-confirmed manual Phase 5 acceptance passed on 2026-10-05. The user also confirmed all outstanding Phase 2 manual checks complete on that date. See [connections](connections.md) and [events and rides](events-and-rides.md) for retained regression checklists; these sign-offs are separate from automated browser evidence.

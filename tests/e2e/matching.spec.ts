@@ -7,9 +7,10 @@ test.beforeEach(async({page,request})=>{
 test("mocked: explicit discovery, both legs, own participants, household selection and safe summaries",async({page})=>{
   const panel=page.getByRole("region",{name:"To event matches",exact:true});
   await expect(panel.getByRole("heading",{name:"Compatible household"})).toHaveCount(0);
-  const responsePromise=page.waitForResponse(r=>r.request().headers()["next-action"]!==undefined);
-  await panel.getByRole("button",{name:"Find matches",exact:true}).click();
-  const payload=await (await responsePromise).text();
+  const [payload]=await Promise.all([
+    page.waitForResponse(r=>r.request().headers()["next-action"]!==undefined && Boolean(r.request().postData()?.includes("to_event"))).then(r=>r.text()),
+    panel.getByRole("button",{name:"Find matches",exact:true}).click(),
+  ]);
   for(const secret of ["33.7512345","33.7712345","88888888-8888-4888-8888","99999999-9999-4999-8999","driver_ride_id","fingerprint"])expect(payload).not.toContain(secret);
   await expect(panel.getByRole("heading",{name:"Compatible household"})).toHaveCount(1);
   await expect(panel.getByText("Alex: Your household drives")).toBeVisible();await expect(panel.getByText("Taylor: Other household drives")).toBeVisible();await expect(panel.getByText(/Arrival windows overlap/)).toHaveCount(2);

@@ -32,12 +32,13 @@ test("anonymous account access and home route lead to sign-in", async ({ page })
   await page.goto("/households/33333333-3333-4333-8333-333333333333"); await expect(page).toHaveURL(/\/sign-in$/);
 });
 test("pending state, cooldown, resend, and changing email", async ({ page }) => {
+  await page.clock.install();
   await page.goto("/sign-in"); await page.getByLabel("Email address").fill("slow@example.com");
   await page.getByRole("button", { name: "Send code", exact: true }).click();
   await expect(page.getByRole("button", { name: "Sending…" })).toBeDisabled();
   await expect(page.getByLabel("Sign-in code")).toBeVisible();
   await expect(page.getByRole("button", { name: /Resend code in/ })).toBeDisabled();
-  await page.clock.install(); await page.clock.fastForward(61000);
+  await page.clock.fastForward(61000);
   await page.getByRole("button", { name: "Resend code", exact: true }).click();
   await expect(page.getByRole("button", { name: /Resend code in/ })).toBeDisabled();
   await page.getByRole("button", { name: "Change email" }).click();

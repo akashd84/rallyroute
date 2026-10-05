@@ -715,4 +715,8 @@ The client receives a purpose-built projection: counterpart household ID/display
 
 Missing preferences, reconfirmation, expired legs, empty results, partial results, loading and retry cooldowns have explicit UI states. The UI clears earlier cards during a new request and on failure. Buttons respect returned retry timing. Match cards state that seats are not reserved and separate suggestions do not guarantee transport for multiple members together.
 
-Verification commands and evidence are recorded in [database testing](../database-testing.md). Phase 2 deferred manual checks, recurring summaries, connection/contact sharing, carpool assignment, maps and multi-stop optimization remain separate.
+Verification commands and evidence are recorded in [database testing](../database-testing.md). Phase 2 manual verification passed by user sign-off on 2026-10-05. Recurring summaries, maps and multi-stop optimization remain separate; connection/contact sharing and carpool assignments are tracked in Phases 5 and 6.
+
+### Phase 5 connection request capability
+
+Verified household suggestions now also include a short-lived encrypted `requestProof`. The proof is distinct from the continuation cursor and binds the verified user, selected and counterpart households, event/leg, eligible pair and snapshot fingerprint, geographic bound, and expiry. The server-only connection action authenticates it before invoking service-only request creation; SQL rechecks eligibility and the fingerprint. It does not reveal raw ride identifiers or coordinates, and finding matches does not create a request or share contacts. Event-page match cards show existing pending/accepted connection metadata; contact and pickup consent are managed separately through [Phase 5 connections](../connections.md).

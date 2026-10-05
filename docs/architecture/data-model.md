@@ -1,5 +1,7 @@
 # RallyRoute Data Model
 
+Phase 6 implementation: [agreed carpools](../carpools.md) adds two-household arrangements, concrete event/direction rides, explicit member selections, adult driver assignments, revision-bound household approvals and unique confirmed assignments. Public carpool metadata is household-scoped; raw selections and approvals remain private.
+
 ## Purpose
 
 This document defines the RallyRoute domain model and the current Phase 0 database structure.
@@ -670,12 +672,14 @@ Implemented in Phase 0:
 - event participation
 - ride participation
 
-Planned for later MVP phases, not yet part of the current schema:
+Implemented in Phases 3–5:
 
-- route calculation cache
-- match results
-- connection requests
-- accepted connections
+- private route calculation cache and provider controls
+- on-demand matching with safe projections (no persistent matches table)
+- household connection metadata with RLS
+- private contact snapshots and event/leg-specific pickup sharing
+
+Planned for later MVP phases, not yet part of the current schema:
 - carpools
 - carpool membership
 - event-level driver assignments

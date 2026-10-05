@@ -1,9 +1,13 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
+import { ConnectionForm, ContactConsent } from "@/app/households/[id]/connections/forms";
 import { findEventMatches } from "./match-actions";
 import type { MatchResult, RideLeg } from "@/lib/matching/types";
-export function MatchPanel({ eventId, householdId, leg, timezone, readiness }: {
+export function MatchPanel({ eventId, householdId, leg, timezone, readiness, contact, eventName, groupName, householdName, connections = [] }: {
   eventId: string; householdId: string; leg: RideLeg; timezone: string;
+  householdName?: string; connections?: { otherHouseholdId: string; status: string; incoming: boolean }[];
+  contact?: { name: string; email: string }; eventName?: string; groupName?: string;
   readiness: "ready" | "missing" | "reconfirm" | "past";
 }) {
   const [result,setResult] = useState<MatchResult>();
@@ -42,6 +46,12 @@ export function MatchPanel({ eventId, householdId, leg, timezone, readiness }: {
         {result.complete && !result.households.length && <p role="status">No compatible matches found for this event and ride leg.</p>}
         {result.households.map(h=><article key={h.id} className="my-4 border-t pt-3">
           <h4 className="text-lg">{h.name}</h4>
+          <Link className="underline" href={`/households/${householdId}/connections`}>View household connections</Link>
+          {connections.some(c => c.otherHouseholdId === h.id) && <p>{connections.find(c => c.otherHouseholdId === h.id)?.status === "accepted" ? "Connection accepted" : connections.find(c => c.otherHouseholdId === h.id)?.incoming ? "Incoming connection request — open Connections to accept or decline." : "Connection request pending"}</p>}
+          {!connections.some(c => c.otherHouseholdId === h.id) && h.requestProof && contact && <details className="my-3"><summary className="cursor-pointer underline">Request to connect</summary>
+            <p>{groupName ?? "This group"} — {eventName ?? "This event"}</p><p>Request a connection between {householdName ?? "your selected household"} and {h.name}.</p>
+            <ConnectionForm command="request" values={{ householdId, proof: h.requestProof }} label="Send connection request"><ContactConsent name={contact.name} email={contact.email} /></ConnectionForm>
+          </details>}
           {h.opportunities.map(o=><div key={o.id} className="my-3">
             <p>{o.ownMemberName}: {o.ownRole==="driver" ? "Your household drives" : "Other household drives"}</p>
             <p>{leg==="to_event" ? "Arrival" : "Departure"} windows overlap: {display(o.earliest)} – {display(o.latest)} ({timezone})</p>

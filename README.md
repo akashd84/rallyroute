@@ -36,3 +36,7 @@ Group creation, joining, permissions, invitations, and verification: [docs/group
 Six-character invitation codes, short links, attempt limits, legacy-link compatibility, and manual verification: [docs/invitation-codes.md](docs/invitation-codes.md).
 
 Events, attendance, private household addresses, ride preferences, recurrence, and verification: [docs/events-and-rides.md](docs/events-and-rides.md).
+
+Household connections, contact consent, pickup sharing, and verification: [docs/connections.md](docs/connections.md).
+
+Agreed two-household carpools, drivers, participants, schedule, and verification: [docs/carpools.md](docs/carpools.md).
