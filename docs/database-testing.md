@@ -4,7 +4,17 @@ These tests exercise real PostgreSQL grants, RLS, and controlled functions. Vite
 
 ## Linked development verification
 
-Rocket uses linked Supabase Dev. Set `RALLYROUTE_TEST_DATABASE_URL` securely and run `pnpm test:db:linked` with `psql` available. The runner excludes seed idempotency, assumes `postgres` only for transaction-scoped setup/snapshots, and switches assertions to ordinary roles. No Cloud reset or development seed is permitted. Fixture namespace collisions abort. Each suite rolls back, including any pgTAP extension creation. Docker is optional for local/CI verification; it is not a gate for linked development. See [household onboarding](household-onboarding.md) for the current permission matrix and verification record.
+Rocket uses linked Supabase Dev. Run `pnpm test:db:linked` with the linked CLI authenticated. If `RALLYROUTE_TEST_DATABASE_URL` is set securely, the runner uses `psql`; otherwise it uses the linked Management API. The runner excludes seed idempotency, assumes `postgres` only for transaction-scoped setup/snapshots, and switches assertions to ordinary roles. No Cloud reset or development seed is permitted. Fixture namespace collisions abort. Each suite rolls back, including any pgTAP extension creation. Docker is optional for local/CI verification; it is not a gate for linked development. See [household onboarding](household-onboarding.md) for the current permission matrix and verification record.
+
+To run only Phase 3 after its migration is applied:
+
+```sh
+pnpm test:db:linked phase3_geographic_routing.test.sql provider_usage.test.sql
+```
+
+The Management API path expands the synthetic fixture include and converts TAP failures into SQL exceptions because the API exposes only the final result set. Unsupported psql directives are rejected; every suite stays inside a transaction ending in rollback. Raw provider output is suppressed on failure.
+
+The runner accepts one or more exact test filenames from `supabase/tests/database`. With no filenames it runs all supported suites; unknown filenames and the local-only seed suite are rejected. A targeted Phase 3 run does not execute the deferred Phase 2 suites.
 
 ## Optional local setup
 
@@ -111,3 +121,33 @@ The code suite verifies ordinary-role access, removal of unthrottled RPC entrypo
 `events_phase2.test.sql` covers controlled event/attendance/ride/location workflows and cross-household privacy; `event_series.test.sql` covers recurring patterns and successor-series replacement. Legacy direct-mutation cases now assert denied grants; successful writes use controlled RPCs.
 
 For supplemental overlapping-transaction checks, apply migrations to a disposable loopback PostgreSQL database named `rallyroute_test_*`, set `RALLYROUTE_DISPOSABLE_DATABASE_URL` securely, and run `node scripts/test-events-serialization.mjs`. It verifies event-edit/ride-save, cancellation/attendance-save, household-departure/ride-save, and duplicate-series races, using ordinary authenticated clients. It refuses Cloud targets and cleans up its synthetic fixture namespace. Linked suites remain transaction-scoped and never seed or reset Cloud.
+
+## Phase 3 verification
+
+The linked Dev suites pass 40 geographic-routing, 65 event, and 36 shared provider-control assertions. Each suite rolls back its fixtures. Opt-in live API and browser checks are documented in [routing architecture](architecture/routing.md); the live browser check uses a disposable real Auth account with narrowly scoped cleanup rather than transaction-only fixtures.
+
+
+## Phase 4 matching verification
+
+`supabase/tests/database/phase4_matching.test.sql` runs transaction-only on linked Dev. Its 41 assertions cover the service-role-only boundary, selected-household authorization, unrelated household denial, group administration, reciprocal roles, keyset continuation, both legs, time-window boundaries, reconfirmation, attendance, archive/location/geographic exclusions, revoked access, and changed-input fingerprints. Existing ride integrity enforces adult drivers and positive additional seats; the Phase 3 suite separately verifies rejection of zero-seat offers.
+
+Run the linked regression subset supported by the existing Management API harness:
+
+```sh
+pnpm test:db:linked events_phase2.test.sql phase3_geographic_routing.test.sql provider_usage.test.sql phase4_matching.test.sql
+```
+
+The broader no-argument runner currently stops on `event_series.test.sql`: that preexisting suite contains inline psql `\gset`/variable syntax which the Management API translator does not handle. This is a harness limitation, not a Phase 4 SQL assertion failure. No local Docker verification is required for Phase 4.
+
+`tests/matching.test.ts` verifies safe projection, exact deterministic ranking, household grouping, cursor encryption/context/expiry, bounded sequential batches, accumulated revalidation, access revocation, changed preferences, partial errors, empty results and the 1,000-pair bound. Existing detour tests cover route ordering, unreachable results and literal zero/exact detour boundaries. `tests/e2e/matching.spec.ts` covers the four mocked browser discovery scenarios, including serialized-response privacy, both legs, own participants, household changes, loading, missing preferences, reconfirmation, empty/partial results, continuation and cooldown retries.
+
+Explicitly opt into real-provider and real-auth Dev checks, with `.env.local` loaded securely into the process environment:
+
+```sh
+RALLYROUTE_TEST_PHASE4=1 node --env-file=.env.local node_modules/vitest/vitest.mjs run tests/phase4-live.test.ts
+RALLYROUTE_TEST_PHASE4_BROWSER=1 pnpm exec playwright test --config playwright.live.config.ts tests/live/phase4.spec.ts
+```
+
+The API harness resolves known candidates through rollback-only linked SQL fixtures, simulates Auth identity and discovery snapshots, then uses actual Valhalla and private cache/control RPCs. It verifies both legs, detour exclusions, repeated-cache reuse without provider HTTP, and changed-snapshot rejection. The separate browser test uses real Supabase Auth and real discovery RPCs with randomly namespaced disposable fixture IDs and public Georgia points. It generates a token without sending email, checks pre-connection response privacy, repeats both-leg searches, invalidates counterpart preferences, and cleans up its isolated group/households/accounts. Successful normalized route cache entries and shared routing usage counters remain; global counters are never reset.
+
+Phase 4 verification on 2026-10-05 passed: 237 ordinary unit tests (six opt-in live tests skipped in that run), 182 linked assertions across the four relevant SQL suites, eight affected mocked browser cases, one real-provider matching integration case, one real-auth Dev browser case, TypeScript, lint, production build and clean linked `public,private` schema lint. Cleanup confirmed zero remaining Phase 4 test accounts and zero reserved-namespace rollback households. No commits or pushes were made.

@@ -12,6 +12,8 @@ const locationSchema = z.object({
   state_region: z.string().nullable(),
   postal_code: z.string().nullable(),
   country_code: z.string(),
+  coordinates_available: z.boolean().optional(),
+  geocoding_attribution: z.string().nullable().optional(),
   revision: z.number(),
   archived_at: z.string().nullable(),
 });
@@ -42,8 +44,18 @@ export default async function LocationsPage({
       </Link>
       <h1 className="my-6 text-3xl">Pickup and dropoff addresses</h1>
       <p>
-        These manually entered addresses are private to your household. Map
-        validation and routing are not available yet.
+        These addresses are private to your household. Address details are
+        sent to Geoapify for coordinate lookup. © OpenStreetMap contributors
+        under the{" "}
+        <a
+          className="underline"
+          href="https://www.openstreetmap.org/copyright"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Open Database License
+        </a>
+        .
       </p>
       {(error || !parsed.success) && (
         <p role="alert">Unable to load addresses.</p>
@@ -58,6 +70,17 @@ export default async function LocationsPage({
             <p>
               {l.address_line_1}, {l.city}, {l.state_region} {l.postal_code}
             </p>
+            {l.coordinates_available === false && (
+              <p role="status">
+                Coordinates are not available yet. Edit and save this address
+                to resolve it.
+              </p>
+            )}
+            {l.geocoding_attribution && (
+              <p className="text-sm text-muted-foreground">
+                {l.geocoding_attribution}
+              </p>
+            )}
             {manager && !l.archived_at && (
               <>
                 <EventForm

@@ -5,6 +5,21 @@ const m = vi.hoisted(() => ({
   rpc: vi.fn(),
   refresh: vi.fn(),
 }));
+vi.mock("@/lib/geocoding", () => ({
+  geocodeAddress: vi.fn(async () => ({
+    latitude: 33.75,
+    longitude: -84.39,
+    providerPlaceId: "place-123",
+    attribution: "© OpenStreetMap contributors",
+  })),
+  GeocodingError: class extends Error {
+    code: string;
+    constructor(code: string) {
+      super(code);
+      this.code = code;
+    }
+  },
+}));
 vi.mock("@/lib/supabase/server", () => ({ createClient: m.client }));
 vi.mock("next/cache", () => ({ revalidatePath: m.refresh }));
 import { eventAction } from "@/app/events/actions";
@@ -75,6 +90,71 @@ describe("event Server Actions", () => {
       arrival: "2099-01-01T14:00:00Z",
     });
   });
+  it("authorizes and geocodes an address before persisting its coordinates", async () => {
+    const input = {
+      command: "destination-save",
+      groupId,
+      name: "Practice",
+      addressLine1: "10 Sample Road",
+      addressLine2: "",
+      city: "Sampleton",
+      stateRegion: "GA",
+      postalCode: "30301",
+      countryCode: "US",
+    };
+    expect(await eventAction(input)).toMatchObject({ ok: true });
+    expect(m.rpc).toHaveBeenNthCalledWith(
+      1,
+      "authorize_location_geocoding",
+      expect.objectContaining({ p_kind: "event", p_parent_id: groupId }),
+    );
+    expect(m.rpc.mock.calls[1][1].p_data).toMatchObject({
+      latitude: 33.75,
+      longitude: -84.39,
+      providerPlaceId: "place-123",
+      geocodingAttribution: "© OpenStreetMap contributors",
+    });
+  });
+  it("does not geocode address data when database authorization fails", async () => {
+    const { geocodeAddress } = await import("@/lib/geocoding");
+    vi.mocked(geocodeAddress).mockClear();
+    m.rpc.mockResolvedValueOnce({ data: false, error: null });
+    const result = await eventAction({
+      command: "destination-save",
+      groupId,
+      name: "Practice",
+      addressLine1: "10 Sample Road",
+      addressLine2: "",
+      city: "Sampleton",
+      stateRegion: "GA",
+      postalCode: "30301",
+      countryCode: "US",
+    });
+    expect(result).toMatchObject({ ok: false });
+    expect(geocodeAddress).not.toHaveBeenCalled();
+  });
+  it("rejects an address when the geocoder cannot resolve it", async () => {
+    const { geocodeAddress, GeocodingError } = await import("@/lib/geocoding");
+    vi.mocked(geocodeAddress).mockRejectedValueOnce(
+      new GeocodingError("not_found"),
+    );
+    const result = await eventAction({
+      command: "destination-save",
+      groupId,
+      name: "Practice",
+      addressLine1: "Unresolvable address",
+      addressLine2: "",
+      city: "Sampleton",
+      stateRegion: "GA",
+      postalCode: "30301",
+      countryCode: "US",
+    });
+    expect(result).toMatchObject({
+      ok: false,
+      message: expect.stringContaining("could not locate"),
+    });
+    expect(m.rpc).toHaveBeenCalledTimes(1);
+  });
   it("rejects ambiguous one-off times", async () => {
     expect(
       (await eventAction({ ...create, arrivalLocal: "2026-11-01T01:30" })).ok,
@@ -127,4 +207,17 @@ describe("event Server Actions", () => {
     expect((await seriesAction({ groupId, spec: {} })).ok).toBe(false);
     expect(m.client).not.toHaveBeenCalled();
   });
+});
+
+it.each(["uncertain", "rate_limited"] as const)("does not save after %s geocoding", async code => {
+  const { geocodeAddress, GeocodingError } = await import("@/lib/geocoding");
+  vi.mocked(geocodeAddress).mockRejectedValueOnce(new GeocodingError(code));
+  const result = await eventAction({ command: "location-save", householdId, name: "Home", addressLine1: "10 Sample Road", city: "Sampleton", stateRegion: "GA", postalCode: "30301", countryCode: "US" });
+  expect(result.ok).toBe(false);
+  expect(m.rpc).toHaveBeenCalledTimes(1);
+});
+it("reports an unapplied location RPC as setup failure", async () => {
+  m.rpc.mockResolvedValue({ data: null, error: { code: "PGRST202" } });
+  const result = await eventAction({ command: "location-save", householdId, name: "Home", addressLine1: "10 Sample Road", city: "Sampleton", stateRegion: "GA", postalCode: "30301", countryCode: "US" });
+  expect(result.message).toContain("database setup is missing");
 });

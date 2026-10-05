@@ -168,6 +168,17 @@ export default async function EventsPage({
               <p>
                 {d.address_line_1}, {d.city}
               </p>
+              {!d.location && (
+                <p role="status">
+                  Coordinates are not available yet. Edit and save this
+                  destination to resolve it.
+                </p>
+              )}
+              {d.geocoding_attribution && (
+                <p className="text-sm text-muted-foreground">
+                  {d.geocoding_attribution}
+                </p>
+              )}
               {!d.archived_at && (
                 <>
                   <EventForm

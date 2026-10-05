@@ -7,6 +7,9 @@ const hashId = email => { const h = createHash("sha256").update(email).digest("h
 const idFor = email => ["new@example.com", "recipient@example.com", "outsider@example.com"].includes(email) ? hashId(email) : defaultId;
 const events = []; const destinations = []; const locations = []; const attendance = []; const rides = []; const series = [];
 const budgets = new Map();
+let geocodingMode = "precise";
+let matchingMode = "success";
+const matchingRows = [];
 const groups = new Map(); const groupAdmins = []; const memberships = []; const groupInvites = []; const groupRequests = new Map();
 const houses = new Map(); const people = []; const access = []; const invites = []; const requests = new Map();
 function setup(email) {
@@ -34,6 +37,9 @@ const server = http.createServer(async (req, res) => {
   res.setHeader("X-Supabase-Api-Version", "2024-01-01");
   const send = (status, value) => { res.writeHead(status); res.end(JSON.stringify(value)); };
   if (url.pathname === "/health") return send(200, { ok: true });
+  if (url.pathname === "/test/geocoding" && req.method === "POST") { geocodingMode = body.mode; return send(200, {}); }
+  if (url.pathname === "/v1/geocode/search" && geocodingMode === "limited") return send(429, {});
+  if (url.pathname === "/v1/geocode/search") return send(200, { results: [{ lat: 33.749, lon: -84.388, result_type: geocodingMode === "uncertain" ? "city" : "building", country_code: "us", rank: { confidence: 1, confidence_building_level: 1 }, place_id: "mock-place", datasource: { attribution: "© OpenStreetMap contributors" } }] });
   if (url.pathname === "/auth/v1/otp") {
     if (body.email === "slow@example.com") await new Promise(resolve => setTimeout(resolve, 1500));
     if (body.email === "limited@example.com") return send(429, { code: "over_email_send_rate_limit", msg: "private error" });
@@ -59,7 +65,7 @@ const server = http.createServer(async (req, res) => {
     if (claims.email === "signout-error@example.com") return send(422, { code: "unexpected_failure", msg: "private error" });
     return send(200, {});
   }
-  if (url.pathname === "/test/reset" && req.method === "POST") { events.splice(0); destinations.splice(0); locations.splice(0); attendance.splice(0); rides.splice(0); series.splice(0); budgets.clear(); groups.clear(); groupAdmins.splice(0); memberships.splice(0); groupInvites.splice(0); groupRequests.clear(); houses.clear(); people.splice(0); access.splice(0); invites.splice(0); requests.clear(); return send(200, {}); }
+  if (url.pathname === "/test/reset" && req.method === "POST") { geocodingMode = "precise"; matchingMode = "success"; matchingRows.splice(0); events.splice(0); destinations.splice(0); locations.splice(0); attendance.splice(0); rides.splice(0); series.splice(0); budgets.clear(); groups.clear(); groupAdmins.splice(0); memberships.splice(0); groupInvites.splice(0); groupRequests.clear(); houses.clear(); people.splice(0); access.splice(0); invites.splice(0); requests.clear(); return send(200, {}); }
   if (url.pathname === "/test/event-member" && req.method === "POST") { access.filter(a=>a.user_id===defaultId).forEach(a=>a.role="member"); for(let i=groupAdmins.length-1;i>=0;i--)if(groupAdmins[i].user_id===defaultId)groupAdmins.splice(i,1); return send(200,{}); }
   if (url.pathname === "/test/budget" && req.method === "POST") { budgets.set(idFor(body.email), { minute: Date.now(), hour: Date.now(), minuteCount: body.minuteCount ?? 0, hourCount: body.hourCount ?? 0 }); return send(200, {}); }
   if (url.pathname === "/test/legacy" && req.method === "POST") {
@@ -68,7 +74,53 @@ const server = http.createServer(async (req, res) => {
     else groupInvites.push({ id: randomUUID(), group_id: body.groupId, invite_type: "group_link", invited_email: null, token_hash: hash, status: "active", max_uses: null, use_count: 0, expires_at: new Date(Date.now() + 86400000).toISOString() });
     return send(200, {});
   }
+  if (url.pathname === "/test/matching" && req.method === "POST") {
+    matchingMode = body.mode ?? "success";
+    if (!events.length) {
+      const gid = "44444444-4444-4444-8444-444444444444";
+      groups.set(gid,{id:gid,name:"Match club",group_type:"club"});
+      memberships.push({group_id:gid,household_id:defaultHousehold,status:"active"});
+      events.push({id:"55555555-5555-4555-8555-555555555555",group_id:gid,name:"Match event",status:"scheduled",timezone:"America/New_York",required_arrival_at:"2099-01-01T09:00:00Z",ready_to_depart_at:"2099-01-01T17:00:00Z",revision:1});
+      const second={id:"66666666-6666-4666-8666-666666666666",household_id:defaultHousehold,first_name:"Taylor",last_name:"Own",member_type:"adult",archived_at:null};
+      people.push(second);
+      for (const person of people.filter(p=>p.household_id===defaultHousehold)) {
+        attendance.push({event_id:events[0].id,member_id:person.id,status:"going",disabled_at:null});
+        for (const leg of ["to_event","from_event"]) rides.push({id:randomUUID(),event_id:events[0].id,member_id:person.id,leg,mode:"either",household_location_id:randomUUID(),anchor_earliest_at:"2099-01-01T08:50:00Z",anchor_latest_at:"2099-01-01T09:00:00Z",available_seats:2,max_detour_minutes:10,disabled_at:null,needs_reconfirmation:false});
+      }
+      const secondHouse="77777777-7777-4777-8777-777777777777";
+      houses.set(secondHouse,{id:secondHouse,display_name:"Other own household",archived_at:null});
+      access.push({household_id:secondHouse,user_id:defaultId,role:"owner"});
+      memberships.push({group_id:gid,household_id:secondHouse,status:"active"});
+    }
+    matchingRows.splice(0);
+    const count=matchingMode==="empty" ? 0 : matchingMode==="more" ? 23 : 2;
+    for(let n=0;n<count;n++) {
+      const rideId=`88888888-8888-4888-8888-${String(n).padStart(12,"0")}`;
+      const riderId=`99999999-9999-4999-8999-${String(n).padStart(12,"0")}`;
+      matchingRows.push({pair_key:`${rideId}:${riderId}`,fingerprint:"a".repeat(32),other_household_id:"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",other_household_name:"Compatible household",own_member_id:people[n%2].id,own_member_name:n%2?"Taylor":"Alex",own_role:n%2?"rider":"driver",earliest:"2099-01-01T08:50:00Z",latest:"2099-01-01T09:00:00Z"});
+    }
+    rides.forEach(r=>{r.needs_reconfirmation=matchingMode==="reconfirm";r.disabled_at=r.needs_reconfirmation ? new Date().toISOString() : null;r.mode=matchingMode==="missing"?"none":"either";});
+    return send(200,{url:`/groups/${events[0].group_id}/events/${events[0].id}?household=${defaultHousehold}`});
+  }
   if (url.pathname.startsWith("/rest/v1/")) {
+    // Secret API keys are opaque, not JWTs. Handle privileged mock RPCs first.
+    if (req.headers.apikey === "sb_secret_mock-key") {
+      if (url.pathname === "/rest/v1/rpc/match_candidates") {
+        const house=houses.get(body.p_household_id);
+        if (!house || !access.some(a=>a.household_id===house.id && a.user_id===body.p_user_id)) return send(403,{code:"42501",message:"private error"});
+        let rows=body.p_household_id===defaultHousehold ? matchingRows : [];
+        rows=rows.filter(c=>body.p_keys ? body.p_keys.includes(c.pair_key) : c.pair_key>(body.p_after??""));
+        return send(200,rows.slice(0,body.p_limit).map(c=>({pair_key:c.pair_key,candidate:{...c,route:{event_id:body.p_event_id,leg:body.p_leg,event_latitude:33.8,event_longitude:-84.4,driver_latitude:33.7512345,driver_longitude:-84.39,rider_latitude:33.7712345,rider_longitude:-84.38,driver_max_detour_minutes:10,driver_available_seats:2}}})));
+      }
+      if (url.pathname === "/rest/v1/rpc/routing_cache_get") return send(200,null);
+      if (url.pathname === "/rest/v1/rpc/routing_request_claim") {
+        if(matchingMode==="slow") await new Promise(resolve=>setTimeout(resolve,300));
+        return send(200,matchingMode==="failure" ? {status:"rate_limited",retryAfterSeconds:1} : {status:"cached",result:{status:"ok",durationSeconds:600,distanceMeters:10000}});
+      }
+      if (url.pathname === "/rest/v1/rpc/provider_budget_acquire") return send(200, { status: "ok" });
+      if (url.pathname === "/rest/v1/rpc/provider_budget_release") return send(200, null);
+      return send(403, { code: "42501", message: "Unsupported privileged mock operation" });
+    }
     const claims = JSON.parse(Buffer.from(req.headers.authorization.split(" ")[1].split(".")[1], "base64url"));
     const email = claims.email; const id = setup(email);
     const ownHouses = () => access.filter(a => a.user_id === id).map(a => a.household_id);
@@ -120,6 +172,8 @@ const server = http.createServer(async (req, res) => {
     if (table.startsWith("rpc/")) {
       const rpc = table.slice(4); const hid = body.p_household_id;
       const denied = () => send(400, { code: "22023", message: "private database details" });
+      if (rpc === "provider_budget_acquire") return send(200, { status: "ok" });
+      if (rpc === "authorize_location_geocoding") return send(200, true);
       if (rpc === "household_location_list") return ownHouses().includes(hid) ? send(200,locations.filter(l=>l.household_id===hid)) : denied();
       if (rpc === "event_workflow") {
         const d=body.p_data,c=body.p_command; const ev=events.find(e=>e.id===d.eventId);
@@ -132,7 +186,7 @@ const server = http.createServer(async (req, res) => {
           let row=source.find(l=>l.id===d.locationId);
           if(row){if(c==="destination-save")events.filter(e=>e.location_id===row.id).forEach(e=>invalidate(e.id));else rides.filter(r=>r.household_location_id===row.id).forEach(r=>Object.assign(r,{disabled_at:new Date().toISOString(),needs_reconfirmation:true}));}
           else {row={id:randomUUID(),revision:0,archived_at:null};source.push(row);}
-          Object.assign(row,{group_id:d.groupId,household_id:d.householdId,name:d.name,label:d.name,address_line_1:d.addressLine1,address_line_2:d.addressLine2,city:d.city,state_region:d.stateRegion,postal_code:d.postalCode,country_code:d.countryCode,revision:row.revision+1});return send(200,row.id);
+          Object.assign(row,{group_id:d.groupId,household_id:d.householdId,name:d.name,label:d.name,address_line_1:d.addressLine1,address_line_2:d.addressLine2,city:d.city,state_region:d.stateRegion,postal_code:d.postalCode,country_code:d.countryCode,latitude:d.latitude,longitude:d.longitude,provider_place_id:d.providerPlaceId,geocoding_attribution:d.geocodingAttribution,revision:row.revision+1});return send(200,row.id);
         }
         if(c==="event-save"){
           let row=ev;if(row){if(row.required_arrival_at!==d.arrival||row.ready_to_depart_at!==d.departure||row.timezone!==d.timezone||row.location_id!==d.locationId)invalidate(row.id);}

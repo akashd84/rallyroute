@@ -6,7 +6,7 @@ Phase 2 implementation is available on linked Dev. Completion is pending the two
 
 Open a group and choose **Events and destinations**. Group Owners and legacy Group Admins create structured, manually entered destinations, one-off events, and recurring series. Open an event, explicitly select one of your participating households, and save each participant's attendance before configuring rides. Household screens link to **Pickup and dropoff addresses**.
 
-Addresses have no autocomplete, geocoding, map validation, or routing yet. Coordinates remain nullable. No Google keys are required.
+Addresses remain manually entered, but saves now resolve coordinates server-side through Geoapify using OpenStreetMap data. The exact address is sent to that provider; users are told in the form. Unresolved addresses are rejected with an error. Coordinates are stored with the existing PostGIS geography fields; household coordinates remain private. Legacy addresses without coordinates are identified so an Owner/Admin can re-save and resolve them. Route calculations and geographic prefiltering are server-only and are not shown as match suggestions in this phase.
 
 ## Permissions
 

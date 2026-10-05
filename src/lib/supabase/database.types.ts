@@ -23,6 +23,7 @@ export type Database = {
           country_code: string
           created_at: string
           created_by_user_id: string | null
+          geocoding_attribution: string | null
           group_id: string
           id: string
           location: unknown
@@ -41,6 +42,7 @@ export type Database = {
           country_code?: string
           created_at?: string
           created_by_user_id?: string | null
+          geocoding_attribution?: string | null
           group_id: string
           id?: string
           location?: unknown
@@ -59,6 +61,7 @@ export type Database = {
           country_code?: string
           created_at?: string
           created_by_user_id?: string | null
+          geocoding_attribution?: string | null
           group_id?: string
           id?: string
           location?: unknown
@@ -829,6 +832,15 @@ export type Database = {
         Args: { p_household_id: string; p_member_id: string }
         Returns: undefined
       }
+      authorize_location_geocoding: {
+        Args: {
+          p_kind: string
+          p_location_id?: string
+          p_parent_id: string
+          p_revision?: number
+        }
+        Returns: boolean
+      }
       complete_household_onboarding: {
         Args: {
           p_first_name: string
@@ -894,6 +906,22 @@ export type Database = {
         Returns: Json
       }
       leave_household: { Args: { p_household_id: string }; Returns: undefined }
+      match_candidates: {
+        Args: {
+          p_after?: string
+          p_event_id: string
+          p_household_id: string
+          p_keys?: string[]
+          p_leg: string
+          p_limit?: number
+          p_max_distance: number
+          p_user_id: string
+        }
+        Returns: {
+          candidate: Json
+          pair_key: string
+        }[]
+      }
       onboard_household: {
         Args: {
           p_display_name: string
@@ -916,6 +944,19 @@ export type Database = {
         Args: { p_household_id: string; p_user_id: string }
         Returns: undefined
       }
+      provider_budget_acquire: {
+        Args: {
+          p_concurrency?: number
+          p_hour_limit?: number
+          p_lease_seconds?: number
+          p_minute_limit?: number
+          p_provider: string
+          p_subject: string
+          p_token?: string
+        }
+        Returns: Json
+      }
+      provider_budget_release: { Args: { p_token: string }; Returns: undefined }
       redeem_group_invitation: {
         Args: { p_household_id: string; p_token_hash: string }
         Returns: string
@@ -931,6 +972,41 @@ export type Database = {
       revoke_household_invitation: {
         Args: { p_household_id: string; p_invitation_id: string }
         Returns: undefined
+      }
+      route_candidate_inputs: {
+        Args: {
+          p_driver_ride_id: string
+          p_event_id: string
+          p_max_pickup_distance_meters: number
+          p_rider_ride_id: string
+          p_user_id: string
+        }
+        Returns: {
+          driver_available_seats: number
+          driver_latitude: number
+          driver_longitude: number
+          driver_max_detour_minutes: number
+          event_id: string
+          event_latitude: number
+          event_longitude: number
+          household_distance_meters: number
+          leg: string
+          rider_latitude: number
+          rider_longitude: number
+        }[]
+      }
+      routing_cache_get: { Args: { p_cache_key: string }; Returns: Json }
+      routing_cache_put: {
+        Args: { p_cache_key: string; p_provider: string; p_result: Json }
+        Returns: undefined
+      }
+      routing_request_claim: {
+        Args: { p_cache_key: string; p_lease_seconds: number; p_token: string }
+        Returns: Json
+      }
+      routing_request_finish: {
+        Args: { p_cache_key: string; p_result: Json; p_token: string }
+        Returns: boolean
       }
       series_workflow: { Args: { p_data: Json }; Returns: string }
     }

@@ -361,7 +361,7 @@ The engine should eliminate candidates as early and cheaply as possible.
 
 The routing provider is not locked by the schema.
 
-Google Maps Routes API is the leading initial candidate, but provider-specific details should remain behind a small application abstraction.
+Valhalla is the initial adapter behind the server-only `RoutingProvider` contract. Future providers, including Google Routes, can be added without changing matching logic. See [routing architecture](routing.md).
 
 The matching domain should ask for concepts such as:
 
@@ -376,7 +376,7 @@ rather than embedding provider response structures throughout application code.
 
 ## Route Calculation Cache
 
-Route calculations should be cached so repeated screen loads do not repeatedly call a paid external API.
+Route calculations are cached in the private `private.routing_result_cache` table for 30 days so repeated requests do not repeatedly call the external routing API. The successful-result cache stores normalized duration/distance results only; a separate private lease table holds five-minute unreachable and 30-second transient-failure cooldowns. Concurrent misses are deduplicated across application instances, and external requests use shared Postgres budgets. cache keys are SHA-256 hashes over normalized route inputs, provider endpoint, and `ROUTE_CACHE_VERSION`. Changing coordinates or bumping the version naturally misses stale entries. Expired entries are pruned during cache writes.
 
 A future internal/private cache may contain values such as:
 
@@ -392,8 +392,6 @@ A future internal/private cache may contain values such as:
 - calculation timestamp
 - input/version hash
 
-The cache is not currently implemented in the Phase 0 schema.
-
 ### Cache invalidation
 
 A cached result should be considered stale when relevant inputs change, including:
@@ -404,7 +402,7 @@ A cached result should be considered stale when relevant inputs change, includin
 - routing assumptions/provider settings
 - age threshold if time-sensitive traffic routing is eventually used
 
-Do not cache based only on display addresses when geographic coordinates are available.
+Do not cache based only on display addresses when geographic coordinates are available. Exact coordinates and cache rows are accessible only through server-side privileged routing workflows, never direct client grants.
 
 ---
 
@@ -414,11 +412,13 @@ After hard filters pass, compatible candidates may be ranked.
 
 Initial ranking should remain transparent.
 
-Recommended priority:
+Phase 4 event-level priority:
 
-1. greater useful schedule overlap across related Events
-2. lower added drive time
-3. wider overlapping time window
+1. lower added drive time, using exact seconds
+2. wider overlapping arrival/departure window
+3. stable opaque pair identifier
+
+Household cards use their best verified pair for ranking. Cross-event useful schedule overlap is deferred until recurring compatibility summaries are implemented.
 
 Do not display an invented score such as:
 
@@ -521,17 +521,9 @@ The match service should return a purpose-built projection rather than giving th
 
 ## Match Storage
 
-The exact match persistence model is intentionally deferred until Phase 4.
+Phase 4 calculates candidates on demand and reuses the private Phase 3 route cache. There is no permanent `matches` table. Connections and carpool persistence remain separate future workflows.
 
-Possible options include:
-
-- calculate matches on demand
-- materialize/cached match candidates
-- hybrid calculation plus cached route data
-
-Do not add a permanent `matches` table merely because this document describes match concepts.
-
-Choose storage based on actual Phase 4 query patterns.
+Continuation state is encrypted and authenticated with AES-256-GCM using a domain-separated key derived from the server-only Supabase secret key. It binds the verified user, selected household, event and leg, expires after 30 minutes, and contains no client-readable ride IDs. Rotating the secret invalidates existing cursors; users can start a fresh search.
 
 ---
 
@@ -705,3 +697,22 @@ These extensions must preserve the event-level, privacy-first foundation.
 When implementing Phase 4, treat this document as the intended behavior but confirm the current migrations and data model before coding.
 
 If the schema and this document disagree, the committed migrations describe current reality and the discrepancy should be resolved explicitly rather than silently worked around.
+
+
+## Phase 4 discovery implementation
+
+The event page offers explicit **Find matches** controls per leg for the selected household. Loading an event does not calculate routes. The server action validates UUIDs and the leg, verifies identity with `getUser()`, and invokes the service-role-only `public.match_candidates` wrapper. Its `SECURITY DEFINER` implementation is in `private`; anonymous/authenticated roles cannot invoke either function or resolve cross-household coordinates.
+
+SQL requires access to the selected active household and active membership in the event group. One side of every returned pair must belong to that household. The existing route-candidate resolver supplies the group/event/leg, adult-driver, attendance, mode, seat, time, location and PostGIS filters. Discovery additionally rejects preferences requiring reconfirmation. Group administration alone grants no discovery access.
+
+Requests evaluate at most 20 pairs sequentially in stable driver/rider UUID order, with one lookahead row for continuation. Both routing calls within a pair retain Phase 3 caching and provider controls. A search retains up to 1,000 evaluated pairs; reaching that bound with more candidates yields an explicit partial-result message and no further cursor. This protects action payload size and cumulative revalidation work. A fresh search restarts discovery and reuses cached routes. Candidate sets remain live: newly eligible records preceding the continuation key require a fresh search, rather than being discovered retrospectively by keyset continuation.
+
+Only verified compatible pairs enter the result. Detour-exceeded and unreachable pairs are excluded; temporary routing errors mark the search partial and retain safe retry timing. Failure status survives subsequent batches. Retrying starts a new search so failed pairs are reevaluated. More batches return all retained suggestions, regrouped and reranked; partial rankings are explicitly provisional.
+
+After routing, one fresh SQL call rechecks selected-household authorization and every accumulated compatible pair. An internal snapshot fingerprint covers ride records, event, participants, household display names, resolved coordinates and location revisions. Removed or changed pairs are discarded and results become partial. Revoked selected-household access returns no suggestions, including on an otherwise empty search. This revalidation occurs on every search/continuation request; suggestions are observations rather than reservations and can change after the response.
+
+The client receives a purpose-built projection: counterpart household ID/display name, opaque opportunity ID, own participant first name, proposed driving role, intersected time window and estimated added seconds. It receives no counterpart member names, ride IDs, exact addresses, coordinates, contact information, raw preferences or route geometry. Household cards combine reciprocal opportunities and preserve separate one-rider pairs. Times use the event timezone; detours round upward to whole minutes only for display. OpenStreetMap attribution remains visible.
+
+Missing preferences, reconfirmation, expired legs, empty results, partial results, loading and retry cooldowns have explicit UI states. The UI clears earlier cards during a new request and on failure. Buttons respect returned retry timing. Match cards state that seats are not reserved and separate suggestions do not guarantee transport for multiple members together.
+
+Verification commands and evidence are recorded in [database testing](../database-testing.md). Phase 2 deferred manual checks, recurring summaries, connection/contact sharing, carpool assignment, maps and multi-stop optimization remain separate.

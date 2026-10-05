@@ -227,3 +227,39 @@ test("mocked: Members select private locations and manage rides without settings
   await ride.getByRole("button", { name: "Save ride preference" }).click();
   await expect(ride.getByRole("status")).toHaveText("Saved.");
 });
+
+test("mocked: rejected geocoding preserves destination and household addresses", async ({ page, request }) => {
+  await setup(page);
+  const details = page.locator("details").filter({ has: page.locator("summary", { hasText: "Community hall" }) });
+  await details.locator("summary").click();
+  const edit = details.locator("form").filter({ has: page.getByRole("button", { name: "Save destination", exact: true }) });
+  await edit.getByLabel("Address line 1").fill("Uncertain destination");
+  await request.post("http://127.0.0.1:54329/test/geocoding", { data: { mode: "uncertain" } });
+  page.once("dialog", dialog => dialog.accept());
+  await edit.getByRole("button", { name: "Save destination", exact: true }).click();
+  await expect(edit.getByRole("status")).toContainText("could not verify this exact address");
+  await expect(details.locator("p").first()).toContainText("Synthetic street");
+  await request.post("http://127.0.0.1:54329/test/geocoding", { data: { mode: "precise" } });
+  page.once("dialog", dialog => dialog.accept());
+  await edit.getByRole("button", { name: "Save destination", exact: true }).click();
+  await expect(edit.getByRole("status")).toHaveText("Saved.");
+  await expect(details.locator("p").first()).toContainText("Uncertain destination");
+
+  await page.goto("/households/33333333-3333-4333-8333-333333333333/locations");
+  const create = page.locator("form").filter({ has: page.getByRole("button", { name: "Save address", exact: true }) }).last();
+  await create.getByLabel("Name", { exact: true }).fill("Verified home");
+  await create.getByLabel("Address line 1").fill("Synthetic private street");
+  await create.getByLabel("City").fill("Test city");
+  await create.getByLabel("State / region").fill("TS");
+  await create.getByLabel("Postal code").fill("00000");
+  await create.getByRole("button", { name: "Save address", exact: true }).click();
+  await expect(create.getByRole("status")).toHaveText("Saved.");
+  const section = page.locator("section").filter({ has: page.getByRole("heading", { name: "Verified home", exact: true }) });
+  const householdEdit = section.locator("form").filter({ has: page.getByRole("button", { name: "Save address", exact: true }) });
+  await householdEdit.getByLabel("Address line 1").fill("Another private street");
+  await request.post("http://127.0.0.1:54329/test/geocoding", { data: { mode: "limited" } });
+  page.once("dialog", dialog => dialog.accept());
+  await householdEdit.getByRole("button", { name: "Save address", exact: true }).click();
+  await expect(householdEdit.getByRole("status")).toContainText("Try again in 30 seconds");
+  await expect(section.locator("p").first()).toContainText("Synthetic private street");
+});

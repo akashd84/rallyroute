@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { eventSchema } from "@/lib/events/validation";
 import { localInstant } from "@/lib/events/time";
+import { geocodeAddress, GeocodingError } from "@/lib/geocoding";
 import type { HouseholdResult } from "@/lib/households/result";
 import type { Json } from "@/lib/supabase/database.types";
 export async function eventAction(input: unknown): Promise<HouseholdResult> {
@@ -27,6 +28,57 @@ export async function eventAction(input: unknown): Promise<HouseholdResult> {
         destination: "/sign-in",
       };
     const payload: Record<string, Json | undefined> = { ...value };
+    if (
+      value.command === "location-save" ||
+      value.command === "destination-save"
+    ) {
+      const household = value.command === "location-save";
+      const authorized = await supabase.rpc("authorize_location_geocoding", {
+        p_kind: household ? "household" : "event",
+        p_parent_id: household ? value.householdId : value.groupId,
+        p_location_id: value.locationId,
+        p_revision: value.revision,
+      });
+      if (authorized.error && ["PGRST202", "42883"].includes(authorized.error.code))
+        return { ok: false, message: "Address lookup database setup is missing. Contact the administrator." };
+      if (authorized.error || !authorized.data)
+        return {
+          ok: false,
+          message: "You do not have permission to save this address. Reload and check your access.",
+        };
+      try {
+        const coordinates = await geocodeAddress(value, undefined, undefined, { kind: household ? "household" : "event", userId: user.id });
+        payload.latitude = coordinates.latitude;
+        payload.longitude = coordinates.longitude;
+        payload.providerPlaceId = coordinates.providerPlaceId;
+        payload.geocodingAttribution = coordinates.attribution;
+      } catch (error) {
+        if (error instanceof GeocodingError) {
+          if (error.code === "uncertain")
+            return { ok: false, message: "We could not verify this exact address. Check the street number, city, postal code and country, then try again." };
+          if (error.code === "rate_limited")
+            return { ok: false, message: `Address lookup is busy. Try again in ${error.retryAfterSeconds ?? 30} seconds.` };
+          if (error.code === "not_configured")
+            return {
+              ok: false,
+              message: "Address lookup is not configured. Contact the administrator.",
+            };
+          if (error.code === "not_found")
+            return {
+              ok: false,
+              message: "We could not locate this address. Check the address fields and try again.",
+            };
+          return {
+            ok: false,
+            message: "Address lookup is temporarily unavailable. Try again later.",
+          };
+        }
+        return {
+          ok: false,
+          message: "Unable to verify this address. Please try again.",
+        };
+      }
+    }
     const convert = (v: string, timezone: string) =>
       v ? localInstant(v.slice(0, 10), v.slice(11), timezone) : null;
     if (value.command === "event-save") {

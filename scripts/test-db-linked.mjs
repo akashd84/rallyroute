@@ -2,9 +2,22 @@
 // Credentials travel through the process environment, never command arguments/logs.
 import { readdirSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-if (!process.env.RALLYROUTE_TEST_DATABASE_URL) {
-  console.error("Set RALLYROUTE_TEST_DATABASE_URL securely to the linked Dev PostgreSQL connection URL. Requires psql; never use a production database.");
+import { runManagementSuite } from "./database-management-tests.mjs";
+const directory = "supabase/tests/database";
+const availableFiles = readdirSync(directory).filter(file => file.endsWith(".test.sql") && file !== "seed_idempotency.test.sql").sort();
+const requestedFiles = process.argv.slice(2);
+if (requestedFiles.some(file => !availableFiles.includes(file))) {
+  console.error("Unknown or unsupported database suite. Supply test filenames from supabase/tests/database; seed_idempotency.test.sql is local-only.");
   process.exit(1);
+}
+const files = requestedFiles.length ? [...new Set(requestedFiles)] : availableFiles;
+if (!process.env.RALLYROUTE_TEST_DATABASE_URL) {
+  for (const file of files) {
+    const source = readFileSync(`${directory}/${file}`, "utf8");
+    if (!/^begin;/m.test(source) || !/^rollback;/m.test(source) || /\\ir .*seed\.sql/.test(source)) throw new Error(`Unsafe suite: ${file}`);
+    if (!runManagementSuite(file, source)) process.exit(1);
+  }
+  process.exit(0);
 }
 let connection;
 try {
@@ -17,8 +30,6 @@ const databaseEnv = { ...process.env,
   PGDATABASE: decodeURIComponent(connection.pathname.slice(1)) || "postgres",
   PGSSLMODE: connection.searchParams.get("sslmode") || "require",
 };
-const directory = "supabase/tests/database";
-const files = readdirSync(directory).filter(file => file.endsWith(".test.sql") && file !== "seed_idempotency.test.sql").sort();
 for (const file of files) {
   const text = readFileSync(`${directory}/${file}`, "utf8");
   if (!/^begin;/m.test(text) || !/^rollback;/m.test(text) || /\\ir .*seed\.sql/.test(text)) throw new Error(`Unsafe suite: ${file}`);

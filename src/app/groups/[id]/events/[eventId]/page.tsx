@@ -6,6 +6,7 @@ import Link from "next/link";
 import { z } from "zod";
 import { accountContext } from "@/lib/households/context";
 import { displayTime, localInput } from "@/lib/events/time";
+import { MatchPanel } from "@/app/events/match-panel";
 import { RideFields } from "@/app/events/ride-fields";
 import { EventForm } from "@/app/events/forms";
 import { TimezoneField } from "@/app/events/timezone-field";
@@ -198,6 +199,39 @@ export default async function EventPage({
           >
             Manage household addresses
           </Link>
+          {(["to_event", "from_event"] as const).map((leg) => {
+            const anchor = leg === "to_event"
+              ? event.required_arrival_at
+              : event.ready_to_depart_at;
+            if (!anchor) return null;
+            const activePeople = people.data?.filter((p) =>
+              attendance.data?.some((a) =>
+                a.member_id === p.id && a.status === "going" && !a.disabled_at,
+              ),
+            ) ?? [];
+            const preferences = rides.data?.filter((r) =>
+              r.leg === leg && activePeople.some((p) => p.id === r.member_id),
+            ) ?? [];
+            const ready = preferences.some((r) =>
+              !r.disabled_at && !r.needs_reconfirmation &&
+              ["need_ride", "can_drive", "either"].includes(r.mode),
+            );
+            return (
+              <MatchPanel
+                key={`${household.id}:${leg}:${event.revision}:${JSON.stringify(preferences)}`}
+                eventId={eventId}
+                householdId={household.id}
+                leg={leg}
+                timezone={event.timezone}
+                readiness={
+                  !future || Date.parse(anchor) <= Date.now() ? "past"
+                    : ready ? "ready"
+                    : preferences.some((r) => r.needs_reconfirmation) ? "reconfirm"
+                    : "missing"
+                }
+              />
+            );
+          })}
           {people.data?.map((person) => {
             const att = attendance.data?.find((a) => a.member_id === person.id);
             const values = {

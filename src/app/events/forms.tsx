@@ -38,6 +38,28 @@ export function AddressFields({
           />
         </label>
       ))}
+      <p className="text-sm text-muted-foreground">
+        Address details are sent to Geoapify for coordinate lookup using
+        OpenStreetMap data. © OpenStreetMap contributors (
+        <a
+          className="underline"
+          href="https://www.openstreetmap.org/copyright"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Open Database License
+        </a>
+        ). Geocoding provided by{" "}
+        <a
+          className="underline"
+          href="https://www.geoapify.com/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Geoapify
+        </a>
+        .
+      </p>
     </>
   );
 }
