@@ -5,16 +5,16 @@ import { z } from "zod";
 import { householdContext } from "@/lib/households/context";
 import { carpoolSchema } from "@/lib/carpools/types";
 import { displayTime, localInput } from "@/lib/events/time";
-import { CarpoolForm, CarpoolConsent, ProposeRide, SelectParticipants } from "../forms";
+import { CarpoolForm, CarpoolConsent, ProposeRide, SelectParticipants } from "@/app/households/[id]/carpools/forms";
 export const dynamic = "force-dynamic";
 export default async function CarpoolPage({ params }: { params: Promise<{ id: string; carpoolId: string }> }) {
   const { id, carpoolId } = await params;
-  if (![id,carpoolId].every(v => z.string().uuid().safeParse(v).success)) return <main>Carpool unavailable</main>;
+  if (![id,carpoolId].every(v => z.string().uuid().safeParse(v).success)) return <div>Carpool unavailable</div>;
   const { household, supabase } = await householdContext(id);
-  if (!household) return <main>Carpool unavailable</main>;
+  if (!household) return <div>Carpool unavailable</div>;
   const result = await supabase.rpc("get_carpool", { p_household_id: id, p_carpool_id: carpoolId });
   const parsed = carpoolSchema.safeParse(result.data);
-  if (result.error || !parsed.success) return <main className="p-6"><p role="alert">Carpool unavailable. Reload to check access.</p><Link href={`/households/${id}/carpools`}>Your carpools</Link></main>;
+  if (result.error || !parsed.success) return <div className="p-6"><p role="alert">Carpool unavailable. Reload to check access.</p><Link href={`/households/${id}/carpools`}>Your carpools</Link></div>;
   const c = parsed.data;
   const [events, people, attendance, preferences] = c.status === "accepted" ? await Promise.all([
     supabase.from("events").select("id,name,revision,timezone,required_arrival_at,ready_to_depart_at").eq("group_id",c.groupId).eq("status","scheduled").or(`required_arrival_at.gt.${new Date().toISOString()},ready_to_depart_at.gt.${new Date().toISOString()}`).order("required_arrival_at"),
@@ -25,7 +25,7 @@ export default async function CarpoolPage({ params }: { params: Promise<{ id: st
   const selectionsLoaded = !events.error && !people.error && !attendance.error && !preferences.error;
   const base = { householdId:id, carpoolId, revision:String(c.revision) };
   const now = Date.now();
-  return <main className="mx-auto max-w-3xl p-6"><Link className="underline" href={`/households/${id}/carpools`}>Your carpools</Link>
+  return <div className="mx-auto max-w-3xl p-6"><Link className="underline" href={`/households/${id}/carpools`}>Your carpools</Link>
     <h1 className="my-4 text-3xl">Carpool with {c.otherHouseholdName ?? "connected household"}</h1><p>{c.groupName} — Status: {c.status}</p>
     <p className="my-3">Both households approve each ride. Times and routes are agreed manually. Pickup addresses require separate consent.</p>
     <Link className="underline" href={`/households/${id}/connections`}>Contacts and pickup sharing</Link>
@@ -66,5 +66,5 @@ export default async function CarpoolPage({ params }: { params: Promise<{ id: st
         </>}
       </section>;
     })}
-  </main>;
+  </div>;
 }

@@ -16,13 +16,13 @@ export default async function EventsPage({
   const { id } = await params;
   const { supabase, user } = await accountContext();
   if (!z.string().uuid().safeParse(id).success)
-    return <main>Group unavailable</main>;
+    return <div>Group unavailable</div>;
   const { data: group } = await supabase
     .from("groups")
     .select("id,name")
     .eq("id", id)
     .maybeSingle();
-  if (!group) return <main>Group unavailable</main>;
+  if (!group) return <div>Group unavailable</div>;
   const [events, destinations, admins] = await Promise.all([
     supabase.from("events").select("*").eq("group_id", id),
     supabase
@@ -45,7 +45,7 @@ export default async function EventsPage({
         Date.parse(b.required_arrival_at ?? b.ready_to_depart_at!),
     ) ?? [];
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <div className="mx-auto max-w-3xl p-6">
       <Link href={`/groups/${id}`} className="underline">
         {group.name}
       </Link>
@@ -219,6 +219,6 @@ export default async function EventsPage({
           ))}
         </>
       )}
-    </main>
+    </div>
   );
 }

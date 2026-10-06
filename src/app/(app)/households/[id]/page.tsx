@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { z } from "zod";
 import { householdContext } from "@/lib/households/context";
-import { HouseholdForm, HouseholdSelector, NameFields } from "../forms";
+import { HouseholdForm, HouseholdSelector, NameFields } from "@/app/households/forms";
 export const dynamic = "force-dynamic";
 export default async function HouseholdPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success) return <main className="p-6"><p className="my-4"><Link className="underline" href={`/households/${id}/locations`}>Pickup and dropoff addresses</Link></p><h1>Household unavailable</h1><Link href="/account">Your account</Link></main>;
+  if (!z.string().uuid().safeParse(id).success) return <div className="p-6"><p className="my-4"><Link className="underline" href={`/households/${id}/locations`}>Pickup and dropoff addresses</Link></p><h1>Household unavailable</h1><Link href="/account">Your account</Link></div>;
   const { household, user, supabase, access, participants, invitations, loadError } = await householdContext(id);
-  if (!household || loadError) return <main className="p-6"><h1>Household unavailable</h1><p role="alert">You may no longer have access. Return to your account or reload to try again.</p><Link href="/account">Your account</Link></main>;
+  if (!household || loadError) return <div className="p-6"><h1>Household unavailable</h1><p role="alert">You may no longer have access. Return to your account or reload to try again.</p><Link href="/account">Your account</Link></div>;
   const ownRole = access.find(a => a.user_id === user.id)?.role;
   const manage = ownRole === "owner" || ownRole === "admin";
   const { data: households } = await supabase.from("households").select("id, display_name").is("archived_at", null).order("created_at");
   const base = { householdId: id };
-  return <main className="mx-auto w-full max-w-3xl p-6 text-slate-900"><Link href="/account" className="text-teal-800 underline">Your account</Link>
+  return <div className="mx-auto w-full max-w-3xl p-6 text-slate-900"><Link href="/account" className="text-teal-800 underline">Your account</Link>
     <h1 className="my-4 text-3xl font-semibold">{household.display_name ?? "Household"}</h1><p>Your role: {ownRole === "owner" ? "Owner" : ownRole === "admin" ? "Legacy administrator" : "Member"}</p>
     <HouseholdSelector households={households ?? []} selected={id} />
     <nav className="flex gap-4"><Link href={`/households/${id}/connections`} className="underline">Connections</Link><Link href={`/households/${id}/carpools`} className="underline">Carpools</Link><Link href="/groups" className="underline">Your groups</Link><a href="#participants" className="underline">Participants</a><a href="#settings" className="underline">Household settings</a></nav>
@@ -47,5 +47,5 @@ export default async function HouseholdPage({ params }: { params: Promise<{ id: 
       {ownRole === "owner" && <HouseholdForm command="demote" values={base} label="Step down to Member" confirmation="Step down? If you are the only Owner, the longest-standing Member becomes Owner." />}
       <HouseholdForm command="leave" values={base} label="Leave household" confirmation="Leave this household? Ownership transfers if needed. If you are the last account holder, the household archives. History is preserved." />
     </section>
-  </main>;
+  </div>;
 }

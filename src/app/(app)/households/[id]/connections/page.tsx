@@ -3,14 +3,14 @@ import Link from "next/link";
 import { z } from "zod";
 import { householdContext } from "@/lib/households/context";
 import { connectionsSchema, displayAddress, locationsSchema } from "@/lib/connections/types";
-import { ConnectionForm, ContactConsent, SharePickupForm } from "./forms";
-import { CarpoolForm, CarpoolConsent } from "../carpools/forms";
+import { ConnectionForm, ContactConsent, SharePickupForm } from "@/app/households/[id]/connections/forms";
+import { CarpoolForm, CarpoolConsent } from "@/app/households/[id]/carpools/forms";
 export const dynamic = "force-dynamic";
 export default async function ConnectionsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success) return <main>Household unavailable</main>;
+  if (!z.string().uuid().safeParse(id).success) return <div>Household unavailable</div>;
   const { household, supabase, user, profile } = await householdContext(id);
-  if (!household) return <main>Household unavailable</main>;
+  if (!household) return <div>Household unavailable</div>;
   const [result, locations, households] = await Promise.all([
     supabase.rpc("list_connections", { p_household_id: id }),
     supabase.rpc("household_location_list", { p_household_id: id }),
@@ -23,7 +23,7 @@ export default async function ConnectionsPage({ params }: { params: Promise<{ id
   const events = groupIds.length ? await supabase.from("events").select("id,group_id,name,revision,timezone,required_arrival_at,ready_to_depart_at").in("group_id", groupIds).eq("status", "scheduled").or(`required_arrival_at.gt.${new Date().toISOString()},ready_to_depart_at.gt.${new Date().toISOString()}`).order("required_arrival_at") : { data: [], error: null };
   const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
   const email = user.email ?? "";
-  return <main className="mx-auto max-w-3xl p-6">
+  return <div className="mx-auto max-w-3xl p-6">
     <Link className="underline" href={`/households/${id}`}>Your household</Link>
     <h1 className="my-4 text-3xl">{household.display_name} connections</h1>
     <Link href="/account" className="underline">Your account</Link>
@@ -62,5 +62,5 @@ export default async function ConnectionsPage({ params }: { params: Promise<{ id
         })}
       </section>;
     })}
-  </main>;
+  </div>;
 }

@@ -24,9 +24,9 @@ export default async function LocationsPage({
 }) {
   const { id } = await params;
   if (!z.string().uuid().safeParse(id).success)
-    return <main>Household unavailable</main>;
+    return <div>Household unavailable</div>;
   const context = await householdContext(id);
-  if (!context.household) return <main>Household unavailable</main>;
+  if (!context.household) return <div>Household unavailable</div>;
   const { data, error } = await context.supabase.rpc(
     "household_location_list",
     { p_household_id: id },
@@ -38,7 +38,7 @@ export default async function LocationsPage({
     context.access?.find((a) => a.user_id === context.user.id)?.role ===
       "admin";
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <div className="mx-auto max-w-3xl p-6">
       <Link className="underline" href={`/households/${id}`}>
         Household
       </Link>
@@ -136,6 +136,6 @@ export default async function LocationsPage({
           rides.
         </p>
       )}
-    </main>
+    </div>
   );
 }

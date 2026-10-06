@@ -31,14 +31,14 @@ export default async function EventPage({
   const query = await searchParams;
   const { supabase, user, profile } = await accountContext();
   if (![id, eventId].every((v) => z.string().uuid().safeParse(v).success))
-    return <main>Event unavailable</main>;
+    return <div>Event unavailable</div>;
   const { data: event, error } = await supabase
     .from("events")
     .select("*")
     .eq("id", eventId)
     .eq("group_id", id)
     .maybeSingle();
-  if (error || !event) return <main>Event unavailable</main>;
+  if (error || !event) return <div>Event unavailable</div>;
   const group = await supabase.from("groups").select("name").eq("id", id).maybeSingle();
   const [admins, houses, memberships, destinations] = await Promise.all([
     supabase
@@ -124,7 +124,7 @@ export default async function EventPage({
   );
   const fields = { groupId: id, eventId, revision: String(event.revision) };
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <div className="mx-auto max-w-3xl p-6">
       <Link className="underline" href={`/groups/${id}/events`}>
         Group events
       </Link>
@@ -445,6 +445,6 @@ export default async function EventPage({
           />
         </section>
       )}
-    </main>
+    </div>
   );
 }

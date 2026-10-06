@@ -26,3 +26,20 @@ Verification on 2026-10-05 passes 262 ordinary unit tests, all 34 mocked browser
 Phase 6 agreed carpools are **implemented and verified on Dev**. Two connected households accept a carpool invitation, select their own attending participants, assign an adult driver and seat capacity, and approve each concrete event/direction ride at the same revision. Edits clear approvals; lifecycle changes persist invalidation or cancellation. Household-private tables, controlled projections, revision guards and unique confirmed assignments enforce authorization, privacy and concurrency safety. Migrations `20261005130000` and review fixes `20261005140000` are applied to linked Dev and public TypeScript types regenerated.
 
 Verification on 2026-10-05 passed 286 ordinary unit tests, all 36 mocked browser tests, 308 relevant linked SQL assertions, a real two-account Dev browser check covering both legs and five concurrency scenarios with fixture cleanup, TypeScript, lint, build and clean linked schema lint. The review fixed disabled-attendance eligibility, immediate event-revision invalidation, and chronological event assignments; the verification subset and real-account concurrency checks were rerun successfully. User manual Phase 6 acceptance remains pending; see [carpools](../carpools.md). Phase 2 and Phase 5 manual checks are complete by user sign-off on 2026-10-05; Phase 1 group/invitation and authentication edge-case verification remain separately unconfirmed. No commit, push or production deployment was made.
+
+
+## Current priority: mobile UX and public site before pilot release
+
+User direction on 2026-10-05 pauses Phase 7 pilot release and recruitment. Prioritize a mobile-first application experience and public website while retaining the existing household, group, matching, sharing and two-household carpool behavior.
+
+Delivery sequence:
+
+1. Audit mobile journeys and establish a consistent visual system and navigation.
+2. Build a public landing experience explaining RallyRoute, trusted groups and controlled sharing, with clear sign-in and invitation-entry paths.
+3. Improve the mobile application: onboarding, household selection, events, ride preferences, matches, connections and confirmed carpool schedules. Preserve explicit consent and database authorization.
+4. Test responsive layouts, accessibility, mobile keyboards, loading/error states and core workflows on actual phones.
+5. Prepare and test PWA installation and update behavior. Keep authenticated responses and sensitive household data out of persistent service-worker caches; define offline behavior explicitly.
+6. Release the beta as a web app and PWA after testing and explicit release authorization. Resume the controlled pilot when ready.
+7. Plan app-store rollout after user testing; native packaging and store submission are future work.
+
+Phase 6 manual acceptance remains pending. Existing Phase 1 group/invitation and authentication manual checks remain launch prerequisites. This direction does not authorize deployment, participant invitations, commit or push.

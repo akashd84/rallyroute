@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { z } from "zod";
 import { accountContext } from "@/lib/households/context";
-import { GroupForm, GroupDetailsFields } from "../forms";
+import { GroupForm, GroupDetailsFields } from "@/app/groups/forms";
 export const dynamic = "force-dynamic";
 export default async function GroupPage({ params }: { params: Promise<{ id: string }> }) {
   const context = await accountContext();
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success) return <main className="p-6"><h1>Group unavailable</h1><Link href="/groups">Your groups</Link></main>;
+  if (!z.string().uuid().safeParse(id).success) return <div className="p-6"><h1>Group unavailable</h1><Link href="/groups">Your groups</Link></div>;
   const { data: group, error } = await context.supabase.from("groups").select("id, name, group_type, description").eq("id", id).maybeSingle();
-  if (context.profileError || error || !group) return <main className="p-6"><h1>Group unavailable</h1><p role="alert">You may not have access, or the group could not be loaded.</p><Link href="/groups">Your groups</Link></main>;
+  if (context.profileError || error || !group) return <div className="p-6"><h1>Group unavailable</h1><p role="alert">You may not have access, or the group could not be loaded.</p><Link href="/groups">Your groups</Link></div>;
   const [admins, memberships, houses] = await Promise.all([
     context.supabase.from("group_admins").select("role").eq("group_id", id).eq("user_id", context.user.id),
     context.supabase.from("group_memberships").select("household_id").eq("group_id", id).eq("status", "active"),
@@ -19,7 +19,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
   const ownHouses = houses.data?.filter(h => memberships.data?.some(m => m.household_id === h.id)) ?? [];
   const { data: invitations, error: inviteError } = role ? await context.supabase.from("group_invitations").select("id, invite_type, invited_email, status, use_count, max_uses, expires_at").eq("group_id", id).order("created_at", { ascending: false }) : { data: [], error: null };
   const loadError = admins.error || memberships.error || houses.error || inviteError;
-  return <main className="mx-auto w-full max-w-3xl p-6"><Link href="/groups" className="underline text-teal-800">Your groups</Link>
+  return <div className="mx-auto w-full max-w-3xl p-6"><Link href="/groups" className="underline text-teal-800">Your groups</Link>
     <p className="mt-4"><Link className="underline" href={`/groups/${id}/events`}>Events and destinations</Link></p><h1 className="my-6 text-3xl font-semibold">{group.name}</h1><p className="capitalize">{group.group_type}</p><p className="my-3">{group.description}</p><p>Your group role: {role === "owner" ? "Group Owner" : role ? "Group Admin" : "Group Member"}</p>
     {loadError ? <p role="alert" className="mt-4">Group details could not be loaded. Reload to try again.</p> : <>
       <h2 className="mt-6 text-xl font-semibold">Your participating households</h2><ul>{ownHouses.map(h => <li key={h.id}><Link href={`/households/${h.id}`} className="underline">{h.display_name ?? "Household"}</Link></li>)}</ul>
@@ -32,5 +32,5 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
         </li>)}</ul>
       </section> : <p className="mt-6">Group Owners manage settings and invitations. Household ownership does not grant group administration.</p>}
     </>}
-  </main>;
+  </div>;
 }
