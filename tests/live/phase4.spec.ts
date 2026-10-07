@@ -55,7 +55,13 @@ commit;`);
     const verified=await client.auth.verifyOtp({token_hash:link.data.properties.hashed_token,type:"magiclink"});
     if(verified.error)throw new Error("Disposable sign-in failed");
     await context.addCookies(cookies.map(c=>({...c,domain:"127.0.0.1",httpOnly:false,secure:false,sameSite:"Lax" as const})));
-    await page.goto(`/groups/${id(301)}/events/${id(610)}?household=${id(101)}`);
+    const slugResult = await client.from("groups").select("slug").eq("id", id(301)).single();
+    if (slugResult.error || !slugResult.data) throw new Error("Fixture group slug unavailable");
+    const groupSlug = slugResult.data.slug;
+    const eventSlugResult = await client.from("events").select("slug").eq("id", id(610)).single();
+    if (eventSlugResult.error || !eventSlugResult.data) throw new Error("Fixture event slug unavailable");
+    const eventSlug = eventSlugResult.data.slug;
+    await page.goto(`/groups/${groupSlug}/${eventSlug}?household=${id(101)}`);
     for(const label of ["To event matches","From event matches"]){
       const panel=page.getByRole("region",{name:label,exact:true});
       await expect(panel.getByRole("heading",{name:"Fixture Household B"})).toHaveCount(0);

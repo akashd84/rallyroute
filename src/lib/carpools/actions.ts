@@ -1,4 +1,6 @@
 "use server";
+import { householdUrlForId } from "@/lib/households/urls";
+import { householdLinkRecoveryPath } from "@/lib/households/paths";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { localInstant } from "@/lib/events/time";
@@ -39,9 +41,11 @@ export async function carpoolAction(input: unknown): Promise<HouseholdResult> {
     if (status === "invalid_ride") return { ok: false, message: "Review attendance, the adult driver, participants, and available seats before approving." };
     if (status !== "ok" && status !== "existing") return { ok: false, message: "This arrangement changed or is unavailable. Reload, review the details, and try again." };
     revalidatePath("/account");
-    revalidatePath(`/households/${value.householdId}/carpools`, "layout");
-    revalidatePath("/groups/[id]/events/[eventId]", "page");
+    revalidatePath("/households/[householdSlug]/carpools", "page");
+    revalidatePath("/households/[householdSlug]/carpools/[carpoolId]", "page");
+    const url = value.command === "create" ? await householdUrlForId(client, value.householdId) : null;
+    revalidatePath("/groups/[slug]/[eventSlug]", "page");
     return { ok: true, message: status === "existing" ? "An arrangement already exists. Review it below." : "Saved.",
-      ...(value.command === "create" && outcome.data.id ? { destination: `/households/${value.householdId}/carpools/${outcome.data.id}` } : {}) };
+      ...(value.command === "create" && outcome.data.id ? { destination: url ? `${url}/carpools/${outcome.data.id}` : householdLinkRecoveryPath } : {}) };
   } catch { return { ok: false, message: "Unable to save this carpool. Reload and try again." }; }
 }

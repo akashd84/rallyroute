@@ -2,7 +2,14 @@ import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ user: vi.fn(), rpc: vi.fn(), adminRpc: vi.fn(), refresh: vi.fn() }));
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: m.refresh }));
-vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ auth: { getUser: m.user }, rpc: m.rpc }) }));
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    auth: { getUser: m.user }, rpc: m.rpc,
+    from: () => ({ select: () => ({ eq: () => ({ is: () => ({
+      maybeSingle: async () => ({ data: { slug: "fixture-household-a" }, error: null }),
+    }) }) }) }),
+  }),
+}));
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => ({ rpc: m.adminRpc }) }));
 import { decodeConnectionProof, encodeConnectionProof } from "@/lib/connections/proof";
 import { connectionAction } from "@/lib/connections/actions";
@@ -45,7 +52,7 @@ describe("connection actions", () => {
   });
   it("derives request arguments from proof rather than client identity", async () => {
     const result = await connectionAction({ command: "request", householdId: id(101), otherHouseholdId: id(999), userId: id(999), email: "forged@example.test", proof: encodeConnectionProof(proofInput), phone: "+1 404 555 0100", consent: "yes" });
-    expect(result).toMatchObject({ ok: true, destination: `/households/${id(101)}/connections` });
+    expect(result).toMatchObject({ ok: true, destination: "/households/fixture-household-a/connections" });
     expect(m.adminRpc).toHaveBeenCalledWith("request_connection", expect.objectContaining({ p_user_id: id(1), p_other_household_id: id(102), p_pair_key: proofInput.pair, p_fingerprint: proofInput.fingerprint }));
     expect(JSON.stringify(m.adminRpc.mock.calls)).not.toContain("forged@example.test");
     expect(JSON.stringify(result)).not.toContain(proofInput.pair);

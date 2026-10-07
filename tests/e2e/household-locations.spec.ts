@@ -1,0 +1,80 @@
+import { test, expect, type Page } from "@playwright/test";
+async function login(page: Page) {
+  await page.goto("/sign-in");
+  await page.getByLabel("Email address").fill("adult@example.com");
+  await page.getByRole("button", { name: "Send code", exact: true }).click();
+  await page.getByLabel("Sign-in code").fill("123456");
+  await page.getByRole("button", { name: "Verify code" }).click();
+  await expect(page).toHaveURL(/\/account$/);
+}
+test.beforeEach(async ({ request }) => { await request.post("http://127.0.0.1:54329/test/reset"); });
+test("mocked: add and edit pages keep household cards read-only and slugs stable", async ({ page, request }) => {
+  await login(page);
+  await page.goto("/households/example-household/locations");
+  await expect(page.locator("main form")).toHaveCount(0);
+  await page.getByRole("link", { name: "Add address", exact: true }).click();
+  await expect(page).toHaveURL("/households/example-household/locations/add");
+  await page.getByLabel("Name", { exact: true }).fill("Home pickup");
+  await page.getByLabel("Address line 1").fill("Synthetic private street");
+  await page.getByLabel("Address line 2").fill("Suite 2");
+  await page.getByLabel("City").fill("Test city");
+  await page.getByLabel("State / region").fill("TS");
+  await page.getByLabel("Postal code").fill("00000");
+  await page.getByRole("button", { name: "Save address", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved.");
+  await page.goto("/households/example-household");
+  const cards = page.getByRole("region", { name: "Saved addresses", exact: true });
+  const card = cards.locator("section").filter({ has: page.getByRole("heading", { name: "Home pickup", exact: true }) });
+  await expect(card.locator("input, select, textarea")).toHaveCount(0);
+  await expect(card.locator("address")).toContainText("Suite 2");
+  await expect(card.locator("footer a")).toHaveAttribute("href", "/households/example-household/locations/home-pickup/edit");
+  await card.getByRole("link", { name: "Edit address", exact: true }).click();
+  await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Home pickup");
+  await page.getByLabel("Name", { exact: true }).fill("Renamed pickup");
+  page.once("dialog", d => d.accept());
+  await page.getByRole("button", { name: "Save address", exact: true }).click();
+  await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Renamed pickup");
+  await expect(page.getByRole("button", { name: "Save address", exact: true })).toBeEnabled();
+  await page.reload();
+  await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Renamed pickup");
+  await expect(page).toHaveURL("/households/example-household/locations/home-pickup/edit");
+  await request.post("http://127.0.0.1:54329/test/matching");
+  for (const path of ["/households/other-own-household/locations/home-pickup/edit", "/households/example-household/locations/missing/edit", "/households/example-household/locations/Bad-Slug/edit", "/households/example-household/locations/33333333-3333-4333-8333-333333333333/edit"]) expect((await page.goto(path))?.status()).toBe(404);
+  await request.post("http://127.0.0.1:54329/test/event-member");
+  for (const path of ["/households/example-household/locations/add", "/households/example-household/locations/home-pickup/edit"]) expect((await page.goto(path))?.status()).toBe(404);
+  await page.goto("/households/example-household/locations");
+  await expect(page.getByRole("heading", { name: "Renamed pickup", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Add address", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Edit address", exact: true })).toHaveCount(0);
+});
+
+test("mocked: one primary address persists and switches across household cards", async ({ page, request }) => {
+  await login(page);
+  for (const name of ["Home", "Work"]) {
+    await page.goto("/households/example-household/locations/add");
+    await page.getByLabel("Name", { exact: true }).fill(name);
+    await page.getByLabel("Address line 1").fill(`${name} private street`);
+    await page.getByLabel("City").fill("Test city");
+    await page.getByLabel("State / region").fill("TS");
+    await page.getByLabel("Postal code").fill("00000");
+    await page.getByRole("button", { name: "Save address", exact: true }).click();
+    await expect(page.getByRole("status")).toHaveText("Saved.");
+  }
+  await page.goto("/households/example-household/locations");
+  const home = page.locator("section").filter({ has: page.getByRole("heading", { name: "Home", exact: true }) }).last();
+  const work = page.locator("section").filter({ has: page.getByRole("heading", { name: "Work", exact: true }) }).last();
+  await home.getByRole("button", { name: "Set as primary", exact: true }).click();
+  await expect(home.getByText("Primary address", { exact: true })).toBeVisible();
+  await expect(page.getByText("Primary address", { exact: true })).toHaveCount(1);
+  await work.getByRole("button", { name: "Set as primary", exact: true }).click();
+  await expect(work.getByText("Primary address", { exact: true })).toBeVisible();
+  await expect(home.getByText("Primary address", { exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(work.getByText("Primary address", { exact: true })).toBeVisible();
+  await page.goto("/households/example-household");
+  await expect(work.getByText("Primary address", { exact: true })).toBeVisible();
+  await request.post("http://127.0.0.1:54329/test/event-member");
+  await page.reload();
+  await expect(work.getByText("Primary address", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Set as primary", exact: true })).toHaveCount(0);
+});

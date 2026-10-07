@@ -37,7 +37,7 @@ Public invoker wrappers call private privileged implementations with fixed empty
 | `inspect_invitation` | `p_kind` (`household`/`group`), `p_token_hash` | `status`; successful group inspection also returns `group` metadata |
 | `accept_invitation` | kind/hash; group household UUID or household first/last names | `status`; success returns `destination_kind` and `destination_id` |
 
-Outcomes are `ok`, `invalid`, `throttled` (with positive `retry_after_seconds`), or `unavailable`. Server Actions validate the response and construct fixed household/group routes from UUIDs. Unexpected provider details are never displayed. Anonymous callers cannot execute these RPCs.
+Outcomes are `ok`, `invalid`, `throttled` (with positive `retry_after_seconds`), or `unavailable`. Server Actions validate the response, construct household routes from UUIDs, and resolve group UUIDs to their RLS-visible stable slugs before constructing group routes. Unavailable group URL lookups return to the group list with recovery guidance. Unexpected provider details are never displayed. Anonymous callers cannot execute these RPCs.
 
 Ordinary-role execution of the old public/private `preview_group_invitation`, `redeem_group_invitation`, and `accept_household_invitation` entrypoints is revoked. The guarded implementations reuse their existing private business logic; clients must switch to the new RPCs. Legacy **links** remain compatible through updated application callers. Invitation creation/revocation RPCs remain available with existing authorization.
 

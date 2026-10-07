@@ -29,7 +29,7 @@ async function expire(context: BrowserContext, validRefresh: boolean) {
 test("anonymous account access and home route lead to sign-in", async ({ page }) => {
   await page.goto("/account"); await expect(page).toHaveURL(/\/sign-in$/);
   await page.goto("/"); await expect(page).toHaveURL(/\/sign-in$/);
-  await page.goto("/households/33333333-3333-4333-8333-333333333333"); await expect(page).toHaveURL(/\/sign-in$/);
+  await page.goto("/households/example-household"); await expect(page).toHaveURL(/\/sign-in$/);
 });
 test("pending state, cooldown, resend, and changing email", async ({ page }) => {
   await page.clock.install();

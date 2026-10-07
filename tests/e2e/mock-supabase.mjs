@@ -13,7 +13,38 @@ const matchingRows = [];
 const connections = [];
 const carpools = [];
 const groups = new Map(); const groupAdmins = []; const memberships = []; const groupInvites = []; const groupRequests = new Map();
-const houses = new Map(); const people = []; const access = []; const invites = []; const requests = new Map();
+function groupSlug(name) {
+  let base = name.replace(/[A-Z]/g, c => c.toLowerCase()).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "group";
+  if (base === "new" || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(base)) base = `group-${base}`;
+  base = base.slice(0, 80).replace(/-+$/g, "");
+  let slug = base;
+  while ([...groups.values()].some(g => g.slug === slug)) slug = `${base.slice(0,71).replace(/-+$/g, "")}-${randomUUID().slice(0,8)}`;
+  return slug;
+}
+
+function eventSlug(groupId, name) {
+  let base = name.replace(/[A-Z]/g, c => c.toLowerCase()).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "event";
+  if (["events","members","settings","invite","share","new"].includes(base) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(base)) base = `event-${base}`;
+  base = base.slice(0,80).replace(/-+$/g, "");
+  let slug = base;
+  while (events.some(e => e.group_id === groupId && e.slug === slug)) slug = `${base.slice(0,71).replace(/-+$/g, "")}-${randomUUID().slice(0,8)}`;
+  return slug;
+}
+
+class HouseholdMap extends Map {
+  set(id, value) {
+    if (!value.slug) {
+      let base = (value.display_name ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "household";
+      if (base === "new" || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(base)) base = `household-${base}`;
+      base = base.slice(0, 80).replace(/-+$/g, "");
+      let slug = base;
+      while ([...this.values()].some(h => h.slug === slug)) slug = `${base.slice(0, 71).replace(/-+$/g, "")}-${randomUUID().slice(0, 8)}`;
+      value.slug = slug;
+    }
+    return super.set(id, value);
+  }
+}
+const houses = new HouseholdMap(); const people = []; const access = []; const invites = []; const requests = new Map();
 function setup(email) {
  const id = idFor(email);
  if (!houses.has(defaultHousehold)) houses.set(defaultHousehold, { id: defaultHousehold, display_name: "Example household", archived_at: null, created_at: "2026-01-01" });
@@ -67,22 +98,28 @@ const server = http.createServer(async (req, res) => {
     if (claims.email === "signout-error@example.com") return send(422, { code: "unexpected_failure", msg: "private error" });
     return send(200, {});
   }
+  if (url.pathname === "/test/calendar-crowded" && req.method === "POST") {
+    const source = events[0];
+    if (!source) return send(400, {});
+    for (let index = 0; index < 6; index++) events.push({ ...source, id: randomUUID(), slug: `calendar-copy-${index}`, name: `Calendar copy ${index}`, status: index === 5 ? "cancelled" : "scheduled", event_series_id: index === 4 ? randomUUID() : null });
+    return send(200, {});
+  }
   if (url.pathname === "/test/reset" && req.method === "POST") { carpools.splice(0); geocodingMode = "precise"; matchingMode = "success"; connections.splice(0); matchingRows.splice(0); events.splice(0); destinations.splice(0); locations.splice(0); attendance.splice(0); rides.splice(0); series.splice(0); budgets.clear(); groups.clear(); groupAdmins.splice(0); memberships.splice(0); groupInvites.splice(0); groupRequests.clear(); houses.clear(); people.splice(0); access.splice(0); invites.splice(0); requests.clear(); return send(200, {}); }
   if (url.pathname === "/test/event-member" && req.method === "POST") { access.filter(a=>a.user_id===defaultId).forEach(a=>a.role="member"); for(let i=groupAdmins.length-1;i>=0;i--)if(groupAdmins[i].user_id===defaultId)groupAdmins.splice(i,1); return send(200,{}); }
   if (url.pathname === "/test/budget" && req.method === "POST") { budgets.set(idFor(body.email), { minute: Date.now(), hour: Date.now(), minuteCount: body.minuteCount ?? 0, hourCount: body.hourCount ?? 0 }); return send(200, {}); }
   if (url.pathname === "/test/legacy" && req.method === "POST") {
     const hash = createHash("sha256").update(body.token).digest("hex");
     if (body.kind === "household") invites.push({ id: randomUUID(), household_id: defaultHousehold, invited_email: "recipient@example.com", token_hash: hash, participant_id: null, expires_at: new Date(Date.now() + 86400000).toISOString(), consumed_at: null, revoked_at: null });
-    else groupInvites.push({ id: randomUUID(), group_id: body.groupId, invite_type: "group_link", invited_email: null, token_hash: hash, status: "active", max_uses: null, use_count: 0, expires_at: new Date(Date.now() + 86400000).toISOString() });
+    else groupInvites.push({ id: randomUUID(), group_id: body.groupId ?? [...groups.values()].find(g => g.slug === body.groupSlug)?.id, invite_type: "group_link", invited_email: null, token_hash: hash, status: "active", max_uses: null, use_count: 0, expires_at: new Date(Date.now() + 86400000).toISOString() });
     return send(200, {});
   }
   if (url.pathname === "/test/matching" && req.method === "POST") {
     matchingMode = body.mode ?? "success";
     if (!events.length) {
       const gid = "44444444-4444-4444-8444-444444444444";
-      groups.set(gid,{id:gid,name:"Match club",group_type:"club"});
+      groups.set(gid,{id:gid,name:"Match club",slug:"match-club",group_type:"club"});
       memberships.push({group_id:gid,household_id:defaultHousehold,status:"active"});
-      events.push({id:"55555555-5555-4555-8555-555555555555",group_id:gid,name:"Match event",status:"scheduled",timezone:"America/New_York",required_arrival_at:"2099-01-01T09:00:00Z",ready_to_depart_at:"2099-01-01T17:00:00Z",revision:1});
+      events.push({id:"55555555-5555-4555-8555-555555555555",group_id:gid,name:"Match event",slug:"match-event",status:"scheduled",timezone:"America/New_York",required_arrival_at:"2099-01-01T09:00:00Z",ready_to_depart_at:"2099-01-01T17:00:00Z",revision:1});
       const second={id:"66666666-6666-4666-8666-666666666666",household_id:defaultHousehold,first_name:"Taylor",last_name:"Own",member_type:"adult",archived_at:null};
       people.push(second);
       for (const person of people.filter(p=>p.household_id===defaultHousehold)) {
@@ -102,7 +139,7 @@ const server = http.createServer(async (req, res) => {
       matchingRows.push({pair_key:`${rideId}:${riderId}`,fingerprint:"a".repeat(32),other_household_id:"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",other_household_name:"Compatible household",own_member_id:people[n%2].id,own_member_name:n%2?"Taylor":"Alex",own_role:n%2?"rider":"driver",earliest:"2099-01-01T08:50:00Z",latest:"2099-01-01T09:00:00Z"});
     }
     rides.forEach(r=>{r.needs_reconfirmation=matchingMode==="reconfirm";r.disabled_at=r.needs_reconfirmation ? new Date().toISOString() : null;r.mode=matchingMode==="missing"?"none":"either";});
-    return send(200,{url:`/groups/${events[0].group_id}/events/${events[0].id}?household=${defaultHousehold}`});
+    return send(200,{url:`/groups/${groups.get(events[0].group_id).slug}/${events[0].slug}?household=${defaultHousehold}`});
   }
   if (url.pathname === "/test/connections" && req.method === "POST") {
     const other="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", recipient=idFor("recipient@example.com");
@@ -111,7 +148,7 @@ const server = http.createServer(async (req, res) => {
       access.push({household_id:other,user_id:recipient,role:"member"});
       people.push({id:randomUUID(),household_id:other,linked_user_id:recipient,first_name:"Alex",last_name:"Example",member_type:"adult",archived_at:null});
       memberships.push({group_id:events[0].group_id,household_id:other,status:"active"});
-      locations.push({id:"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",household_id:defaultHousehold,label:"Home pickup",address_line_1:"Private test address",address_line_2:null,city:"Atlanta",state_region:"GA",postal_code:"30301",country_code:"US",revision:1,archived_at:null});
+      locations.push({id:"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",household_id:defaultHousehold,slug:"home-pickup",label:"Home pickup",address_line_1:"Private test address",address_line_2:null,city:"Atlanta",state_region:"GA",postal_code:"30301",country_code:"US",revision:1,archived_at:null});
     }
     if (body.expire) connections.filter(c=>c.status==="pending").forEach(c=>c.expiresAt=new Date(0).toISOString());
     if (body.changeAddress) { locations[0].revision++; connections.forEach(c=>c.pickups=[]); }
@@ -160,7 +197,7 @@ const server = http.createServer(async (req, res) => {
     const manages = hid => access.some(a => a.household_id === hid && a.user_id === id && ["owner", "admin"].includes(a.role)) && !houses.get(hid)?.archived_at;
     const table = url.pathname.slice("/rest/v1/".length);
     const filter = (rows) => rows.filter(row => [...url.searchParams].every(([key, value]) => {
-      if (["select", "order", "limit"].includes(key)) return true;
+      if (["select", "order", "limit", "offset", "or"].includes(key)) return true;
       if (value === "is.null") return row[key] == null;
       if (value.startsWith("eq.")) return String(row[key]) === value.slice(3);
       return true;
@@ -169,7 +206,9 @@ const server = http.createServer(async (req, res) => {
       const source = {events,event_locations:destinations,event_series:series,event_participation:attendance,ride_participation:rides}[table];
       const rows = filter(source.filter(r => r.group_id ? visible(r.group_id) : people.some(p => p.id===r.member_id && ownHouses().includes(p.household_id))));
       if (req.method === "HEAD") { res.setHeader("Content-Range",`0-${rows.length-1}/${rows.length}`); return send(200,[]); }
-      return send(200,req.headers.accept?.includes("vnd.pgrst.object") ? rows[0]??null : rows);
+      const offset=Number(url.searchParams.get("offset")??0),limit=Number(url.searchParams.get("limit")??rows.length);
+      const pageRows=rows.slice(offset,offset+limit);
+      return send(200,req.headers.accept?.includes("vnd.pgrst.object") ? pageRows[0]??null : pageRows);
     }
     if (table === "groups") {
       let rows = filter([...groups.values()].filter(g => visible(g.id)));
@@ -179,6 +218,7 @@ const server = http.createServer(async (req, res) => {
     if (table === "group_admins") return send(200, filter(groupAdmins.filter(a => isAdmin(a.group_id))));
     if (table === "group_memberships") {
       const rows = filter(memberships.filter(m => visible(m.group_id)));
+      if (req.headers.prefer?.includes("count=exact")) res.setHeader("Content-Range", `0-${Math.max(0,rows.length-1)}/${rows.length}`);
       return send(200, req.headers.accept?.includes("vnd.pgrst.object") ? rows[0] ?? null : rows);
     }
     if (table === "group_invitations") return send(200, filter(groupInvites.filter(i => isAdmin(i.group_id))).map(({ token_hash, ...metadata }) => { void token_hash; return metadata; }));
@@ -203,6 +243,20 @@ const server = http.createServer(async (req, res) => {
     if (table.startsWith("rpc/")) {
       const rpc = table.slice(4); const hid = body.p_household_id;
       const denied = () => send(400, { code: "22023", message: "private database details" });
+      if (rpc === "get_group_overview") {
+        const gid = body.p_group_id;
+        if (!visible(gid)) return send(403, { code: "42501", message: "Group unavailable" });
+        const now = Date.now(), until = now + 7 * 86400000;
+        const upcoming = events.filter(e => e.group_id === gid && e.status === "scheduled" && Date.parse(e.ready_to_depart_at ?? e.required_arrival_at) >= now && Date.parse(e.required_arrival_at ?? e.ready_to_depart_at) <= until);
+        const confirmed = carpools.filter(c => c.groupId === gid && c.status === "accepted").flatMap(c => c.rides).filter(r => r.status === "confirmed" && upcoming.some(e => e.id === r.eventId) && Date.parse(r.anchorAt) >= now && Date.parse(r.anchorAt) <= until);
+        const preferences = rides.filter(r => {
+          const e = upcoming.find(e => e.id === r.event_id), m = people.find(m => m.id === r.member_id);
+          const anchor = e && Date.parse(r.leg === "to_event" ? e.required_arrival_at : e.ready_to_depart_at);
+          return e && m && !m.archived_at && !houses.get(m.household_id)?.archived_at && memberships.some(g => g.group_id === gid && g.household_id === m.household_id && g.status === "active") && !r.disabled_at && !r.needs_reconfirmation && anchor >= now && anchor <= until && attendance.some(a => a.event_id === r.event_id && a.member_id === r.member_id && a.status === "going" && !a.disabled_at) && !confirmed.some(c => c.eventId === r.event_id && c.leg === r.leg && c.participants.some(p => p.id === r.member_id));
+        });
+        const summary = { group_members: memberships.filter(g => g.group_id === gid && g.status === "active" && !houses.get(g.household_id)?.archived_at).length, needs_rides: preferences.filter(r => ["need_ride", "either"].includes(r.mode)).length, drivers_available: preferences.filter(r => ["can_drive", "either"].includes(r.mode) && r.available_seats > 0 && people.find(m => m.id === r.member_id)?.member_type === "adult").length, carpools: confirmed.length };
+        return send(200, req.headers.accept?.includes("vnd.pgrst.object") ? summary : [summary]);
+      }
       if (rpc === "provider_budget_acquire") return send(200, { status: "ok" });
       if (rpc === "authorize_location_geocoding") return send(200, true);
       const projectCarpool=(c,householdId)=>({id:c.id,connectionId:c.connectionId,groupId:c.groupId,groupName:"Match club",status:c.status,revision:c.revision,incoming:c.recipient===householdId,createdAt:c.createdAt,otherHouseholdName:houses.get(c.requester===householdId?c.recipient:c.requester)?.display_name??"Household",rides:c.rides.map(r=>({id:r.id,eventId:r.eventId,eventName:"Match event",timezone:"America/New_York",leg:r.leg,anchorAt:r.anchorAt,status:r.status,revision:r.revision,reason:r.reason,availableSeats:r.availableSeats,driverOwn:r.driverHouseholdId? r.driverHouseholdId===householdId:null,eventRevision:1,participants:r.participants.filter(p=>c.status==="accepted"||p.householdId===householdId).map(p=>({id:p.id,name:p.name,role:p.role,own:p.householdId===householdId})),ownApproved:r.approvals.includes(householdId),otherApproved:r.approvals.some(h=>h!==householdId)}))});
@@ -273,7 +327,50 @@ const server = http.createServer(async (req, res) => {
         else return denied();
         return send(200,{status:"ok",id:c.id});
       }
-      if (rpc === "household_location_list") return ownHouses().includes(hid) ? send(200,locations.filter(l=>l.household_id===hid)) : denied();
+      if (rpc === "set_household_primary_location") {
+        const chosen = locations.find(l => l.id === body.p_location_id && l.household_id === hid && !l.archived_at);
+        if (!manages(hid) || !chosen) return denied();
+        locations.filter(l => l.household_id === hid).forEach(l => { l.is_primary = l.id === chosen.id; });
+        return send(200, null);
+      }
+      if (rpc === "household_location_list") return ownHouses().includes(hid) ? send(200,locations.filter(l=>l.household_id===hid).map(l=>({is_primary:false,...l}))) : denied();
+      if (rpc === "series_ride_preferences") {
+        const d=body.p_data, source=events.find(e=>e.id===d.eventId);
+        if(!source?.event_series_id||!ownHouses().includes(d.householdId)||!people.some(p=>p.id===d.memberId&&p.household_id===d.householdId&&!p.archived_at)||!memberships.some(m=>m.group_id===source.group_id&&m.household_id===d.householdId&&m.status==="active"))return denied();
+        const anchor=e=>e[d.leg==="to_event"?"required_arrival_at":"ready_to_depart_at"];
+        const active=["need_ride","can_drive","either"].includes(d.mode);
+        const location=locations.find(l=>l.id===d.locationId&&l.household_id===d.householdId&&!l.archived_at);
+        if(active&&!location)return denied();
+        if(source.revision!==d.revision)return send(409,{code:"40001",message:"Stale source"});
+        const upcoming=events.filter(e=>e.event_series_id===source.event_series_id&&e.status==="scheduled"&&Math.min(...[e.required_arrival_at,e.ready_to_depart_at].filter(Boolean).map(Date.parse))>Date.now()).sort((a,b)=>a.id.localeCompare(b.id));
+        const targets=upcoming.filter(e=>anchor(e)&&attendance.some(a=>a.event_id===e.id&&a.member_id===d.memberId&&a.status==="going"&&!a.disabled_at));
+        const snapshot=createHash("md5").update(JSON.stringify({sourceRevision:source.revision,address:location?.revision,events:upcoming,attendance:attendance.filter(a=>a.member_id===d.memberId),rides:rides.filter(r=>r.member_id===d.memberId&&r.leg===d.leg)})).digest("hex");
+        const counts={count:targets.length,skipped:upcoming.length-targets.length};
+        if(body.p_expected==null)return send(200,{...counts,snapshot});
+        if(body.p_expected!==snapshot)return send(409,{code:"40001",message:"Occurrences changed"});
+        for(const e of targets){
+          let row=rides.find(r=>r.event_id===e.id&&r.member_id===d.memberId&&r.leg===d.leg);
+          if(!row){row={id:randomUUID(),event_id:e.id,member_id:d.memberId,leg:d.leg};rides.push(row);}
+          const shift=Date.parse(anchor(e))-Date.parse(anchor(source));
+          Object.assign(row,{mode:d.mode,household_location_id:active?d.locationId:null,anchor_earliest_at:active?new Date(Date.parse(d.earliest)+shift).toISOString():null,anchor_latest_at:active?new Date(Date.parse(d.latest)+shift).toISOString():null,available_seats:["can_drive","either"].includes(d.mode)?d.seats:null,max_detour_minutes:["can_drive","either"].includes(d.mode)?d.detour:null,disabled_at:null,needs_reconfirmation:false});
+        }
+        return send(200,counts);
+      }
+      if (rpc === "series_attendance") {
+        const source=events.find(e=>e.id===body.p_event_id);
+        if(!ownHouses().includes(body.p_household_id)||!source?.event_series_id||!people.some(p=>p.id===body.p_member_id&&p.household_id===body.p_household_id&&!p.archived_at)||!memberships.some(m=>m.group_id===source.group_id&&m.household_id===body.p_household_id&&m.status==="active"))return denied();
+        const targets=events.filter(e=>e.event_series_id===source.event_series_id&&e.status==="scheduled"&&Math.min(...[e.required_arrival_at,e.ready_to_depart_at].filter(Boolean).map(Date.parse))>Date.now()).sort((a,b)=>a.id.localeCompare(b.id));
+        const snapshot=targets.map(e=>({id:e.id,revision:e.revision}));
+        if(body.p_expected==null)return send(200,{count:targets.length,snapshot});
+        if(JSON.stringify(body.p_expected)!==JSON.stringify(snapshot))return send(409,{code:"40001",message:"Occurrences changed"});
+        for(const e of targets){
+          let row=attendance.find(a=>a.event_id===e.id&&a.member_id===body.p_member_id);
+          if(!row){row={id:randomUUID(),event_id:e.id,member_id:body.p_member_id};attendance.push(row);}
+          Object.assign(row,{status:body.p_status,disabled_at:null});
+          if(body.p_status!=="going")rides.filter(r=>r.event_id===e.id&&r.member_id===body.p_member_id).forEach(r=>Object.assign(r,{disabled_at:new Date().toISOString(),needs_reconfirmation:true}));
+        }
+        return send(200,{count:targets.length});
+      }
       if (rpc === "event_workflow") {
         const d=body.p_data,c=body.p_command; const ev=events.find(e=>e.id===d.eventId);
         if (c.startsWith("location-") && !manages(d.householdId)) return denied();
@@ -284,12 +381,22 @@ const server = http.createServer(async (req, res) => {
           const source=c==="location-save"?locations:destinations;
           let row=source.find(l=>l.id===d.locationId);
           if(row){if(c==="destination-save")events.filter(e=>e.location_id===row.id).forEach(e=>invalidate(e.id));else rides.filter(r=>r.household_location_id===row.id).forEach(r=>Object.assign(r,{disabled_at:new Date().toISOString(),needs_reconfirmation:true}));}
-          else {row={id:randomUUID(),revision:0,archived_at:null};source.push(row);}
+          else {
+            row={id:randomUUID(),revision:0,archived_at:null};
+            if(c==="location-save") {
+              let base=(d.name ?? "").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "location";
+              if(base==="add" || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(base))base=`location-${base}`;
+              base=base.slice(0,80).replace(/-+$/g,""); let slug=base;
+              while(locations.some(l=>l.household_id===d.householdId && l.slug===slug))slug=`${base.slice(0,71).replace(/-+$/g,"")}-${randomUUID().slice(0,8)}`;
+              row.slug=slug;
+            }
+            source.push(row);
+          }
           Object.assign(row,{group_id:d.groupId,household_id:d.householdId,name:d.name,label:d.name,address_line_1:d.addressLine1,address_line_2:d.addressLine2,city:d.city,state_region:d.stateRegion,postal_code:d.postalCode,country_code:d.countryCode,latitude:d.latitude,longitude:d.longitude,provider_place_id:d.providerPlaceId,geocoding_attribution:d.geocodingAttribution,revision:row.revision+1});return send(200,row.id);
         }
         if(c==="event-save"){
           let row=ev;if(row){if(row.required_arrival_at!==d.arrival||row.ready_to_depart_at!==d.departure||row.timezone!==d.timezone||row.location_id!==d.locationId)invalidate(row.id);}
-          else {row={id:randomUUID(),revision:0,status:"scheduled",event_series_id:null};events.push(row);}
+          else {row={id:randomUUID(),revision:0,status:"scheduled",event_series_id:null,slug:eventSlug(d.groupId,d.name)};events.push(row);}
           Object.assign(row,{group_id:d.groupId,name:d.name,location_id:d.locationId,timezone:d.timezone,required_arrival_at:d.arrival,ready_to_depart_at:d.departure,activity_starts_at:d.activityStart,activity_ends_at:d.activityEnd,revision:row.revision+1});return send(200,row.id);
         }
         if(c==="event-cancel"){ev.status="cancelled";ev.revision++;invalidate(ev.id);return send(200,ev.id);}
@@ -298,9 +405,9 @@ const server = http.createServer(async (req, res) => {
         const row=(c==="location-archive"?locations:destinations).find(l=>l.id===d.locationId);if(row){row.archived_at=new Date().toISOString();return send(200,row.id);}return denied();
       }
       if(rpc==="series_workflow"){
-        const d=body.p_data;if(!isAdmin(d.groupId))return denied();const sid=randomUUID();series.push({id:sid,group_id:d.groupId,revision:1,recurrence_spec:d.spec});
+        const d=body.p_data;if(!isAdmin(d.groupId))return denied();const sid=randomUUID();series.push({id:sid,group_id:d.groupId,name:d.name,location_id:d.locationId,status:"active",revision:1,recurrence_spec:d.spec});
         if(d.replaceEventId){const old=events.find(e=>e.id===d.replaceEventId);events.filter(e=>e.event_series_id===old.event_series_id&&e.original_local_date>=old.original_local_date).forEach(e=>e.status="cancelled");}
-        d.occurrences.forEach(o=>events.push({id:randomUUID(),group_id:d.groupId,event_series_id:sid,name:d.name,location_id:d.locationId,timezone:d.spec.timezone,revision:1,status:"scheduled",activity_starts_at:null,activity_ends_at:null,...o}));return send(200,sid);
+        d.occurrences.forEach(o=>events.push({id:randomUUID(),group_id:d.groupId,event_series_id:sid,name:d.name,slug:eventSlug(d.groupId,d.name),location_id:d.locationId,timezone:d.spec.timezone,revision:1,status:"scheduled",activity_starts_at:null,activity_ends_at:null,...o}));return send(200,sid);
       }
       if (rpc === "create_group_once") {
         if (!manages(hid)) return denied();
@@ -308,7 +415,7 @@ const server = http.createServer(async (req, res) => {
         if (body.p_name === "Slow group") await new Promise(resolve => setTimeout(resolve, 1000));
         const key = id + body.p_request_id; if (groupRequests.has(key)) return send(200, groupRequests.get(key));
         const gid = randomUUID(); groupRequests.set(key, gid);
-        groups.set(gid, { id: gid, name: body.p_name, group_type: body.p_group_type, description: body.p_description || null });
+        groups.set(gid, { id: gid, name: body.p_name, slug: groupSlug(body.p_name), group_type: body.p_group_type, description: body.p_description || null });
         groupAdmins.push({ group_id: gid, user_id: id, role: "owner" }); memberships.push({ id: randomUUID(), group_id: gid, household_id: hid, status: "active" });
         return send(200, gid);
       }

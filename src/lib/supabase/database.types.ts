@@ -309,6 +309,7 @@ export type Database = {
           request_id: string | null
           required_arrival_at: string | null
           revision: number
+          slug: string
           status: string
           timezone: string
           updated_at: string
@@ -329,6 +330,7 @@ export type Database = {
           request_id?: string | null
           required_arrival_at?: string | null
           revision?: number
+          slug: string
           status?: string
           timezone?: string
           updated_at?: string
@@ -349,6 +351,7 @@ export type Database = {
           request_id?: string | null
           required_arrival_at?: string | null
           revision?: number
+          slug?: string
           status?: string
           timezone?: string
           updated_at?: string
@@ -561,6 +564,7 @@ export type Database = {
           group_type: string
           id: string
           name: string
+          slug: string
           updated_at: string
         }
         Insert: {
@@ -570,6 +574,7 @@ export type Database = {
           group_type: string
           id?: string
           name: string
+          slug: string
           updated_at?: string
         }
         Update: {
@@ -579,6 +584,7 @@ export type Database = {
           group_type?: string
           id?: string
           name?: string
+          slug?: string
           updated_at?: string
         }
         Relationships: []
@@ -842,6 +848,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          slug: string
           updated_at: string
         }
         Insert: {
@@ -849,6 +856,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          slug: string
           updated_at?: string
         }
         Update: {
@@ -856,6 +864,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          slug?: string
           updated_at?: string
         }
         Relationships: []
@@ -1060,6 +1069,15 @@ export type Database = {
         Args: { p_carpool_id: string; p_household_id: string }
         Returns: Json
       }
+      get_group_overview: {
+        Args: { p_group_id: string }
+        Returns: {
+          carpools: number
+          drivers_available: number
+          group_members: number
+          needs_rides: number
+        }[]
+      }
       household_location_list: {
         Args: { p_household_id: string }
         Returns: Json
@@ -1187,7 +1205,25 @@ export type Database = {
         Args: { p_cache_key: string; p_result: Json; p_token: string }
         Returns: boolean
       }
+      series_attendance: {
+        Args: {
+          p_event_id: string
+          p_expected?: Json
+          p_household_id: string
+          p_member_id: string
+          p_status: string
+        }
+        Returns: Json
+      }
+      series_ride_preferences: {
+        Args: { p_data: Json; p_expected?: string }
+        Returns: Json
+      }
       series_workflow: { Args: { p_data: Json }; Returns: string }
+      set_household_primary_location: {
+        Args: { p_household_id: string; p_location_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

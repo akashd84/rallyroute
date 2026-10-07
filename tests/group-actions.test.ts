@@ -14,9 +14,14 @@ beforeEach(() => {
   mocks.client.mockResolvedValue({ auth: { getUser: mocks.getUser }, rpc: mocks.rpc, from: mocks.from });
   mocks.getUser.mockResolvedValue({ data: { user: { id: requestId } }, error: null });
   mocks.rpc.mockImplementation(async (name: string) => ({ data: name === "accept_invitation" ? { status: "ok", destination_kind: "group", destination_id: groupId } : groupId, error: null }));
+  mocks.from.mockReturnValue({ select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: { slug: "club" }, error: null }) });
   mocks.getCookie.mockReturnValue({ value: "a".repeat(64) });
 });
 describe("group actions", () => {
+  it.each(["create", "join"])("preserves successful %s when the slug lookup is unavailable", async command => {
+    mocks.from.mockReturnValue({ select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: { code: "unavailable" } }) });
+    expect(await groupAction(command === "create" ? create : { command, householdId })).toMatchObject({ ok: true, destination: "/groups?notice=group-link" });
+  });
   it.each([
     { ...create, name: " " }, { ...create, name: "a".repeat(101) }, { ...create, groupType: "invalid" },
     { ...create, requestId: "bad" }, { ...create, householdId: "bad" }, { ...create, description: "a".repeat(1001) },
@@ -31,7 +36,7 @@ describe("group actions", () => {
     expect(await groupAction(create)).toMatchObject({ ok: false, destination: "/sign-in" }); expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it("uses a stable request identifier and normalized details", async () => {
-    expect(await groupAction(create)).toMatchObject({ ok: true, destination: `/groups/${groupId}` });
+    expect(await groupAction(create)).toMatchObject({ ok: true, destination: "/groups/club" });
     expect(mocks.rpc).toHaveBeenCalledWith("create_group_once", { p_household_id: householdId, p_name: "Club", p_group_type: "club", p_description: "", p_request_id: requestId });
   });
   it.each(["invite-direct", "invite-link"])("sends only a SHA-256 hash for %s", async command => {
@@ -63,10 +68,10 @@ describe("group actions", () => {
     expect((await groupAction({ command: "join", householdId })).message).not.toContain("sensitive"); expect(mocks.deleteCookie).not.toHaveBeenCalled();
   });
   it("explicit joining uses guarded RPC and clears context only on success", async () => {
-    expect(await groupAction({ command: "join", householdId })).toMatchObject({ ok: true, destination: `/groups/${groupId}` });
+    expect(await groupAction({ command: "join", householdId })).toMatchObject({ ok: true, destination: "/groups/club" });
     expect(mocks.rpc).toHaveBeenCalledWith("accept_invitation", { p_kind: "group", p_token_hash: "a".repeat(64), p_household_id: householdId });
     expect(mocks.deleteCookie).toHaveBeenCalledWith("rallyroute-group-invite");
-    expect(mocks.from).not.toHaveBeenCalled();
+    expect(mocks.from).toHaveBeenCalledWith("groups");
   });
   it.each([
     [{ status: "invalid" }, "invited email"],

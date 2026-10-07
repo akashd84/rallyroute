@@ -1,0 +1,240 @@
+[
+  {
+    "route": "/account",
+    "source": "src/app/(app)/account/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/calendar",
+    "source": "src/app/(app)/calendar/page.tsx",
+    "placeholder": true,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/group/[slug]/invite",
+    "source": "src/app/(app)/group/[slug]/invite/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/group/[slug]/share",
+    "source": "src/app/(app)/group/[slug]/share/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]/[eventSlug]/edit",
+    "source": "src/app/(app)/groups/[slug]/[eventSlug]/edit/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]/[eventSlug]",
+    "source": "src/app/(app)/groups/[slug]/[eventSlug]/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]/[eventSlug]/recurring",
+    "source": "src/app/(app)/groups/[slug]/[eventSlug]/recurring/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]/events/destinations",
+    "source": "src/app/(app)/groups/[slug]/events/destinations/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]/events/new",
+    "source": "src/app/(app)/groups/[slug]/events/new/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]/events",
+    "source": "src/app/(app)/groups/[slug]/events/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]/events/series/new",
+    "source": "src/app/(app)/groups/[slug]/events/series/new/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]/members",
+    "source": "src/app/(app)/groups/[slug]/members/page.tsx",
+    "placeholder": true,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]",
+    "source": "src/app/(app)/groups/[slug]/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/[slug]/settings",
+    "source": "src/app/(app)/groups/[slug]/settings/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups/new",
+    "source": "src/app/(app)/groups/new/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/groups",
+    "source": "src/app/(app)/groups/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/households/[householdSlug]/carpools/[carpoolId]",
+    "source": "src/app/(app)/households/[householdSlug]/carpools/[carpoolId]/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/households/[householdSlug]/carpools",
+    "source": "src/app/(app)/households/[householdSlug]/carpools/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/households/[householdSlug]/connections",
+    "source": "src/app/(app)/households/[householdSlug]/connections/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/households/[householdSlug]/locations/[locationSlug]/edit",
+    "source": "src/app/(app)/households/[householdSlug]/locations/[locationSlug]/edit/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/households/[householdSlug]/locations/add",
+    "source": "src/app/(app)/households/[householdSlug]/locations/add/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/households/[householdSlug]/locations",
+    "source": "src/app/(app)/households/[householdSlug]/locations/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/households/[householdSlug]",
+    "source": "src/app/(app)/households/[householdSlug]/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/households/[householdSlug]/settings",
+    "source": "src/app/(app)/households/[householdSlug]/settings/page.tsx",
+    "placeholder": false,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/messages",
+    "source": "src/app/(app)/messages/page.tsx",
+    "placeholder": true,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/",
+    "source": "src/app/(app)/page.tsx",
+    "placeholder": true,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/profile",
+    "source": "src/app/(app)/profile/page.tsx",
+    "placeholder": true,
+    "appShell": true,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/onboarding",
+    "source": "src/app/(onboarding)/onboarding/page.tsx",
+    "placeholder": false,
+    "appShell": false,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/group-invitations/accept",
+    "source": "src/app/group-invitations/accept/page.tsx",
+    "placeholder": false,
+    "appShell": false,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/group-invitations/open",
+    "source": "src/app/group-invitations/open/page.tsx",
+    "placeholder": false,
+    "appShell": false,
+    "auth": "public or conditional"
+  },
+  {
+    "route": "/household-invitations/accept",
+    "source": "src/app/household-invitations/accept/page.tsx",
+    "placeholder": false,
+    "appShell": false,
+    "auth": "authenticated"
+  },
+  {
+    "route": "/household-invitations/open",
+    "source": "src/app/household-invitations/open/page.tsx",
+    "placeholder": false,
+    "appShell": false,
+    "auth": "public or conditional"
+  },
+  {
+    "route": "/join",
+    "source": "src/app/join/page.tsx",
+    "placeholder": false,
+    "appShell": false,
+    "auth": "public or conditional"
+  },
+  {
+    "route": "/sign-in",
+    "source": "src/app/sign-in/page.tsx",
+    "placeholder": false,
+    "appShell": false,
+    "auth": "public or conditional"
+  }
+]

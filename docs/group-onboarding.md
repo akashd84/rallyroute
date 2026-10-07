@@ -4,9 +4,9 @@ This increment implements invite-only group creation, household joining, dashboa
 
 ## Routes and permissions
 
-Open **Your groups** from the account or household screen. `/groups` lists groups visible through active household membership or separate group administration. `/groups/new` requires an active household the caller owns (legacy household Admins retain eligibility), a name, and an existing group type. Description is optional. Creation atomically adds the creator as Group Owner and joins only the selected household. A request UUID protects creation retries.
+Open **Your groups** from the account or household screen. `/groups` lists groups visible through active household membership or separate group administration. “Groups I Manage” contains groups where the signed-in account is an Owner or Admin; “Groups I'm In” contains other joined groups. Each group appears once, in name order within its section, with an empty state for each section. `/groups/new` requires an active household the caller owns (legacy household Admins retain eligibility), a name, and an existing group type. Description is optional. Creation atomically adds the creator as Group Owner and joins only the selected household. A request UUID protects creation retries.
 
-The group dashboard at `/groups/[id]` shows group information and only the caller's participating households. It has no other-household roster or participant/location/attendance/ride data. Household Owner succession, demotion, departure, and archival do not transfer or delete separate group administration. An administrator without household access can still open Your groups from onboarding.
+The group page at `/groups/[slug]` shows group information and only the caller's participating households. It has no other-household roster or participant/location/attendance/ride data. Household Owner succession, demotion, departure, and archival do not transfer or delete separate group administration. An administrator without household access can still open Your groups from onboarding.
 
 | Capability | Group Owner / legacy Group Admin | Household Owner / legacy Household Admin | Household Member |
 | --- | --- | --- | --- |
@@ -19,6 +19,36 @@ The group dashboard at `/groups/[id]` shows group information and only the calle
 | View another household's private transportation data | No | No | No |
 
 Only Group Owner is assigned by the new creation flow. Existing Group Admin permissions remain supported; this increment provides no administrator assignment or transfer UI.
+
+## Stable group URL slugs
+
+`public.groups.slug` is required, globally unique, generated at insertion, and immutable. UUID `id` remains the primary key for relations, authorization, form submissions, and RPC inputs/outputs. Only URL paths use slugs: `/groups/<slug>`, `/events`, `/events/new`, `/<eventslug>`, `/members`, and `/settings` under that group. Event identifiers remain UUIDs internally; event detail URLs use stable event slugs. Old UUID group URLs return a generic 404; there are no aliases or redirects. `/groups/new` remains the creation route. Group Owners and Admins edit the name, type, and description at `/groups/<slug>/settings`, linked from the group dashboard. Other members receive a generic 404 for that settings route. Direct invitation creation and revocation are at `/group/<slug>/invite`; reusable link creation and revocation are at `/group/<slug>/share`. Both are linked from the dashboard and require group administration.
+
+Generation lowercases ASCII A–Z, replaces runs of non-ASCII-alphanumeric characters with hyphens, trims edge hyphens, and falls back to `group` when empty. Slugs are at most 80 characters. The first available normalized name receives the plain slug; duplicates receive an eight-character random hexadecimal suffix with a shortened base. `new` and UUID-shaped names receive a `group-` prefix. Existing groups were backfilled in ascending `created_at`, then UUID order. Renaming changes display text without changing links; there is no slug editing control.
+
+The migration is `20261006193000_group_slugs.sql`. Private database triggers cover every insert path and prevent slug changes; controlled creation retries only slug-specific unique conflicts. Creation RPC signatures, idempotent request handling, RLS, and existing update grants are unchanged. Slugs are readable identifiers, not invitations, public discovery, or authorization tokens. The private allocation helper is not callable by application users.
+
+Group routes resolve through the caller's authenticated client and RLS, with one request-cached lookup shared by the group layout and pages. Missing, malformed, inaccessible, and UUID-shaped paths produce the same generic 404; event queries also require the resolved group's UUID. Server Actions look up slugs after UUID-returning operations. If a successful operation's group URL cannot be resolved, `/groups?notice=group-link` presents fixed recovery guidance rather than a UUID link or an instruction to repeat the mutation. Carpool screens retain event names without links when group access is unavailable.
+
+Deploy the database migration before the slug-route application version, then regenerate public TypeScript types. UUID group bookmarks intentionally stop working when the application update goes live.
+
+Verification commands:
+
+```sh
+pnpm test:db:linked group_slugs.test.sql group_onboarding.test.sql groups_and_participation.test.sql
+node scripts/test-group-slug-concurrency.mjs
+```
+
+The first command uses transaction-only fixtures that roll back. The concurrency check explicitly targets linked Dev, commits disposable synthetic accounts/households/groups to exercise separate transactions, and removes them in `finally` with a zero-record cleanup assertion. It uses no user mailbox or saved sessions. Mock browser checks exercise slug navigation and denial but do not establish live authorization; linked real-role SQL suites do.
+
+### Slug verification — 2026-10-06
+
+- Migration applied to linked Supabase Dev and public TypeScript types regenerated; `public,private` database lint passed.
+- Live backfill audit found zero invalid or duplicate slugs.
+- Fifteen linked real-role database suites passed with 849 supported assertions and rolled-back fixtures. The existing event-series suite required a temporary `\gset`-to-session-setting adaptation because the Management API runner does not support its psql variable; the suite and runner sources were left unchanged.
+- Separate concurrent same-name creation and idempotent retry checks passed on linked Dev. Disposable committed fixtures were removed, with zero synthetic records remaining.
+- TypeScript, ESLint, production build, and 308 unit tests passed (six existing opt-in checks skipped).
+- All 40 mock browser scenarios passed across the regression run and affected reruns, covering old UUID URL denial, slug navigation, unchanged URLs after renaming, duplicate names, event ownership, invitations, and existing event/carpool workflows. These mocks do not replace the linked database authorization checks.
 
 ## Invitation flow
 
@@ -74,3 +104,16 @@ Use mailboxes/accounts and households you control, in separate browser profiles.
 6. Create a reusable link, optionally with a use limit. Join a different eligible household, confirming other households are not automatically joined. Reopening consumed direct or exhausted limited invitations must fail.
 7. As A, create a fresh reusable link, revoke it with confirmation, and verify another authenticated account cannot accept it. Existing memberships remain.
 8. Report passed steps or exact errors, without codes/links. Completion status changes only after automated checks and this manual test pass.
+
+Each `/groups/<groupslug>` page includes every scheduled event occurrence in a rolling seven-day window scoped to that group, ordered by arrival (or departure for departure-only events), soonest first. Ongoing events remain until their final transportation anchor passes; completed and cancelled events are omitted. Recurring occurrences each have their own card with Edit Occurrence and Edit Series links at the bottom. The `/groups` overview lists groups without event cards. Historical records remain available through Events and destinations.
+
+Group pages show a count-only overview to active members and administrators via
+`get_group_overview`. Group Members counts active, unarchived households. The
+remaining metrics cover the next seven days across the group: unfilled participant
+ride requests, available adult driver offers, and confirmed carpool ride legs.
+Each occurrence and direction counts separately; `either` contributes to both
+requests and offers. Confirmed assignments, inactive attendance, archived members,
+and disabled or stale preferences do not contribute to requests/offers. The
+private implementation returns only aggregate counts; household preference RLS
+and precise-location protections remain unchanged. Failed summaries display
+Unavailable rather than misleading zero counts.

@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
+import { householdPath } from "@/lib/households/paths";
 import Link from "next/link";
 import { ConnectionForm, ContactConsent } from "@/app/households/[id]/connections/forms";
 import { findEventMatches } from "./match-actions";
 import type { MatchResult, RideLeg } from "@/lib/matching/types";
-export function MatchPanel({ eventId, householdId, leg, timezone, readiness, contact, eventName, groupName, householdName, connections = [] }: {
-  eventId: string; householdId: string; leg: RideLeg; timezone: string;
+export function MatchPanel({ eventId, householdId, householdSlug, leg, timezone, readiness, contact, eventName, groupName, householdName, connections = [] }: {
+  eventId: string; householdId: string; householdSlug: string; leg: RideLeg; timezone: string;
   householdName?: string; connections?: { otherHouseholdId: string; status: string; incoming: boolean }[];
   contact?: { name: string; email: string }; eventName?: string; groupName?: string;
   readiness: "ready" | "missing" | "reconfirm" | "past";
@@ -26,7 +27,7 @@ export function MatchPanel({ eventId, householdId, leg, timezone, readiness, con
     setResult(undefined);
     startTransition(async () => {
       try {
-        const next = await findEventMatches({ eventId, householdId, leg, ...(cursor ? { cursor } : {}) });
+        const next = await findEventMatches({ eventId, householdId, householdSlug, leg, ...(cursor ? { cursor } : {}) });
         setResult(next);
         setRetryAt(next.retryAfterSeconds ? Date.now()+next.retryAfterSeconds*1000 : 0);
       } catch { setResult({ status: "unavailable", households: [], complete: false }); }
@@ -46,7 +47,7 @@ export function MatchPanel({ eventId, householdId, leg, timezone, readiness, con
         {result.complete && !result.households.length && <p role="status">No compatible matches found for this event and ride leg.</p>}
         {result.households.map(h=><article key={h.id} className="my-4 border-t pt-3">
           <h4 className="text-lg">{h.name}</h4>
-          <Link className="underline" href={`/households/${householdId}/connections`}>View household connections</Link>
+          <Link className="underline" href={`${householdPath(householdSlug)}/connections`}>View household connections</Link>
           {connections.some(c => c.otherHouseholdId === h.id) && <p>{connections.find(c => c.otherHouseholdId === h.id)?.status === "accepted" ? "Connection accepted" : connections.find(c => c.otherHouseholdId === h.id)?.incoming ? "Incoming connection request — open Connections to accept or decline." : "Connection request pending"}</p>}
           {!connections.some(c => c.otherHouseholdId === h.id) && h.requestProof && contact && <details className="my-3"><summary className="cursor-pointer underline">Request to connect</summary>
             <p>{groupName ?? "This group"} — {eventName ?? "This event"}</p><p>Request a connection between {householdName ?? "your selected household"} and {h.name}.</p>

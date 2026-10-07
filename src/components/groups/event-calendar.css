@@ -1,0 +1,15 @@
+.rally-event-calendar {
+  --fc-classic-primary: #0f766e;
+  --fc-classic-primary-foreground: #fff;
+  --fc-classic-event: #0f766e;
+  --fc-classic-background: var(--background);
+  --fc-classic-foreground: var(--foreground);
+  min-width: 0;
+}
+.rally-event-calendar .rally-calendar-cancelled { opacity: .7; text-decoration: line-through; }
+.rally-calendar-event-label { overflow-wrap: anywhere; }
+.rally-event-calendar a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+@media (max-width: 767px) {
+  .rally-event-calendar .fc { font-size: .8rem; }
+  .rally-event-calendar .fc-list-event a { display: inline-flex; min-height: 44px; align-items: center; }
+}

@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>RallyRoute mobile route review</title>
+<style>body{margin:0;background:#f1f5f9;color:#0f172a;font:16px/1.5 system-ui,sans-serif}header,main{max-width:1440px;margin:auto;padding:24px}h1{margin:0}a{color:#00665f}code{overflow-wrap:anywhere;font-size:13px}pre{overflow:auto;background:white;padding:20px;border-radius:12px;font-size:13px}label{display:block;margin:12px 0}input[type=search]{display:block;box-sizing:border-box;width:100%;max-width:600px;padding:12px;font:inherit;border:1px solid #64748b;border-radius:8px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px}article{padding:16px;background:white;border:1px solid #cbd5e1;border-radius:12px;min-width:0}article[hidden]{display:none}article h2{font-size:20px;margin:0 0 8px}article img{display:block;width:100%;height:auto;max-height:650px;object-fit:contain;object-position:top;background:#f8fafc;border:1px solid #cbd5e1}article strong{color:#9f1239}details{margin:12px 0}summary{cursor:pointer;min-height:44px}a:focus-visible,input:focus-visible{outline:3px solid #0f766e;outline-offset:3px}.note{padding:16px;background:#fff7ed;border-left:4px solid #c2410c}</style></head>
+<body><header><h1>RallyRoute mobile route review</h1><p>34 routes · 47 captured states · 2026-10-07T05:07:16.082Z</p>
+<p><a href="navigation.md">Navigation tree and findings</a> · <a href="manifest.json">Capture metadata</a> · <a href="routes.json">Source route inventory</a> · <a href="screenshots/">Screenshot folder</a></p>
+<p class="note">Synthetic data, not live household records. Household navigation clips at mobile widths; the header selection can differ from the URL household. Four bottom tabs are placeholders. The full review explains these findings.</p>
+<details><summary>Expand complete navigation tree</summary><pre>RallyRoute
+├── /sign-in                                  Public email/code sign-in
+├── /join                                     Invitation code; shell when signed in
+├── /onboarding                               Authenticated household setup; standalone
+├── /                                         Home tab — PLACEHOLDER
+├── /account                                  Actual post-login account/household hub
+├── /calendar                                 Calendar tab — PLACEHOLDER
+├── /messages                                 Messages tab — PLACEHOLDER
+├── /profile                                  Profile tab — PLACEHOLDER
+├── /groups                                   Managed and joined groups
+│   ├── /new                                  Create a group
+│   └── /:groupSlug                            Group overview; next 7 days of events
+│       ├── /settings                         Group settings — Owner/Admin
+│       ├── /members                          PLACEHOLDER
+│       ├── /events                           Group calendar: Month/Week/Day/Agenda
+│       │   ├── /new                          Create one-off event — Owner/Admin
+│       │   ├── /series/new                   Create recurring series — Owner/Admin
+│       │   └── /destinations                 Destination management — Owner/Admin
+│       └── /:eventSlug                        Concrete occurrence; attendance and rides
+│           ├── /edit                         Edit occurrence — Owner/Admin
+│           └── /recurring                    Edit series from occurrence — Owner/Admin
+├── /group                                    Namespace only; no landing page
+│   └── /:groupSlug                           Namespace only; no landing page
+│       ├── /invite                           Direct group invitations — Owner/Admin
+│       └── /share                            Reusable group links — Owner/Admin
+├── /households                               Namespace only; no listing page
+│   └── /:householdSlug                        Household, addresses, participant cards
+│       ├── /settings                         Settings/access; management is role-gated
+│       ├── /locations                        Saved address cards
+│       │   ├── /add                          Add address — household Owner/Admin
+│       │   └── /:locationSlug/edit            Edit address — household Owner/Admin
+│       ├── /connections                      Connection requests, contacts, pickup sharing
+│       └── /carpools                          Household carpool list
+│           └── /:carpoolId                    Concrete carpool agreement — UUID identifier
+├── /group-invitations                        Namespace only; no landing page
+│   ├── /open                                 Public fragment capture; then accept/sign-in
+│   └── /accept                               Authenticated join preview; standalone
+└── /household-invitations                    Namespace only; no landing page
+    ├── /open                                 Public fragment capture; then accept/sign-in
+    └── /accept                               Authenticated join preview; standalone
+</pre></details>
+<label for="search">Filter screenshots by route, screen or state<input id="search" type="search" placeholder="Try household, calendar, settings, Member…"></label>
+<label><input id="overflow" type="checkbox"> Show mobile overflow captures only</label><p id="count" role="status">47 screenshots</p></header>
+<main><div class="grid"><article data-search="sign-in /sign-in signed out" data-overflow="false">
+    <h2>sign-in</h2><code>/sign-in</code><p>signed out</p>
+    <p>390 × 844 · Standalone</p>
+    <a href="screenshots/01-sign-in.png"><img loading="lazy" width="390" height="844" src="screenshots/01-sign-in.png" alt="sign-in: signed out, 390px mobile viewport"></a>
+    <p><a href="screenshots/01-sign-in.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/sign-in</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: </p></details>
+  </article>
+<article data-search="sign-in-code /sign-in code entry" data-overflow="false">
+    <h2>sign-in-code</h2><code>/sign-in</code><p>code entry</p>
+    <p>390 × 844 · Standalone</p>
+    <a href="screenshots/02-sign-in-code.png"><img loading="lazy" width="390" height="844" src="screenshots/02-sign-in-code.png" alt="sign-in-code: code entry, 390px mobile viewport"></a>
+    <p><a href="screenshots/02-sign-in-code.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/sign-in</code><p>HTTP same-page state; layout 390 × 844; content 390 × 844</p><p>Header household: </p></details>
+  </article>
+<article data-search="home / default" data-overflow="false">
+    <h2>home</h2><code>/</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/03-home.png"><img loading="lazy" width="390" height="844" src="screenshots/03-home.png" alt="home: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/03-home.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="account /account default" data-overflow="false">
+    <h2>account</h2><code>/account</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/04-account.png"><img loading="lazy" width="390" height="844" src="screenshots/04-account.png" alt="account: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/04-account.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/account</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="global-calendar /calendar default" data-overflow="false">
+    <h2>global-calendar</h2><code>/calendar</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/05-global-calendar.png"><img loading="lazy" width="390" height="844" src="screenshots/05-global-calendar.png" alt="global-calendar: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/05-global-calendar.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/calendar</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="messages /messages default" data-overflow="false">
+    <h2>messages</h2><code>/messages</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/06-messages.png"><img loading="lazy" width="390" height="844" src="screenshots/06-messages.png" alt="messages: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/06-messages.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/messages</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="profile /profile default" data-overflow="false">
+    <h2>profile</h2><code>/profile</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/07-profile.png"><img loading="lazy" width="390" height="844" src="screenshots/07-profile.png" alt="profile: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/07-profile.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/profile</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="onboarding /onboarding default" data-overflow="false">
+    <h2>onboarding</h2><code>/onboarding</code><p>default</p>
+    <p>390 × 844 · Standalone</p>
+    <a href="screenshots/08-onboarding.png"><img loading="lazy" width="390" height="844" src="screenshots/08-onboarding.png" alt="onboarding: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/08-onboarding.png">Viewport PNG</a> · <a href="screenshots/full/08-onboarding.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/onboarding</code><p>HTTP 200; layout 390 × 844; content 390 × 1205</p><p>Header household: </p></details>
+  </article>
+<article data-search="join /join default" data-overflow="false">
+    <h2>join</h2><code>/join</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/09-join.png"><img loading="lazy" width="390" height="844" src="screenshots/09-join.png" alt="join: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/09-join.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/join</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="groups /groups default" data-overflow="false">
+    <h2>groups</h2><code>/groups</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/10-groups.png"><img loading="lazy" width="390" height="844" src="screenshots/10-groups.png" alt="groups: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/10-groups.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="group-new /groups/new default" data-overflow="false">
+    <h2>group-new</h2><code>/groups/new</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/11-group-new.png"><img loading="lazy" width="390" height="844" src="screenshots/11-group-new.png" alt="group-new: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/11-group-new.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/new</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="group /groups/:groupslug default" data-overflow="false">
+    <h2>group</h2><code>/groups/:groupSlug</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/12-group.png"><img loading="lazy" width="390" height="844" src="screenshots/12-group.png" alt="group: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/12-group.png">Viewport PNG</a> · <a href="screenshots/full/12-group.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club</code><p>HTTP 200; layout 390 × 844; content 390 × 1939</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="group-settings /groups/:groupslug/settings default" data-overflow="false">
+    <h2>group-settings</h2><code>/groups/:groupSlug/settings</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/13-group-settings.png"><img loading="lazy" width="390" height="844" src="screenshots/13-group-settings.png" alt="group-settings: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/13-group-settings.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/settings</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="group-members /groups/:groupslug/members placeholder" data-overflow="false">
+    <h2>group-members</h2><code>/groups/:groupSlug/members</code><p>placeholder</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/14-group-members.png"><img loading="lazy" width="390" height="844" src="screenshots/14-group-members.png" alt="group-members: placeholder, 390px mobile viewport"></a>
+    <p><a href="screenshots/14-group-members.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/members</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="group-invite /group/:groupslug/invite default" data-overflow="false">
+    <h2>group-invite</h2><code>/group/:groupSlug/invite</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/15-group-invite.png"><img loading="lazy" width="390" height="844" src="screenshots/15-group-invite.png" alt="group-invite: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/15-group-invite.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/group/route-review-club/invite</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="group-share /group/:groupslug/share default" data-overflow="false">
+    <h2>group-share</h2><code>/group/:groupSlug/share</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/16-group-share.png"><img loading="lazy" width="390" height="844" src="screenshots/16-group-share.png" alt="group-share: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/16-group-share.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/group/route-review-club/share</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="events-agenda /groups/:groupslug/events mobile agenda" data-overflow="false">
+    <h2>events-agenda</h2><code>/groups/:groupSlug/events</code><p>mobile Agenda</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/17-events-agenda.png"><img loading="lazy" width="390" height="844" src="screenshots/17-events-agenda.png" alt="events-agenda: mobile Agenda, 390px mobile viewport"></a>
+    <p><a href="screenshots/17-events-agenda.png">Viewport PNG</a> · <a href="screenshots/full/17-events-agenda.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/events?date=2026-10-08&amp;view=listWeek</code><p>HTTP 200; layout 390 × 844; content 390 × 984</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="events-month /groups/:groupslug/events month" data-overflow="false">
+    <h2>events-month</h2><code>/groups/:groupSlug/events</code><p>month</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/18-events-month.png"><img loading="lazy" width="390" height="844" src="screenshots/18-events-month.png" alt="events-month: month, 390px mobile viewport"></a>
+    <p><a href="screenshots/18-events-month.png">Viewport PNG</a> · <a href="screenshots/full/18-events-month.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/events?date=2026-10-08&amp;view=dayGridMonth</code><p>HTTP 200; layout 390 × 844; content 390 × 1015</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="events-week /groups/:groupslug/events week" data-overflow="false">
+    <h2>events-week</h2><code>/groups/:groupSlug/events</code><p>week</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/19-events-week.png"><img loading="lazy" width="390" height="844" src="screenshots/19-events-week.png" alt="events-week: week, 390px mobile viewport"></a>
+    <p><a href="screenshots/19-events-week.png">Viewport PNG</a> · <a href="screenshots/full/19-events-week.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/events?date=2026-10-08&amp;view=timeGridWeek</code><p>HTTP 200; layout 390 × 844; content 390 × 1544</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="events-day /groups/:groupslug/events day" data-overflow="false">
+    <h2>events-day</h2><code>/groups/:groupSlug/events</code><p>day</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/20-events-day.png"><img loading="lazy" width="390" height="844" src="screenshots/20-events-day.png" alt="events-day: day, 390px mobile viewport"></a>
+    <p><a href="screenshots/20-events-day.png">Viewport PNG</a> · <a href="screenshots/full/20-events-day.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/events?date=2026-10-08&amp;view=timeGridDay</code><p>HTTP 200; layout 390 × 844; content 390 × 1943</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="event-new /groups/:groupslug/events/new default" data-overflow="false">
+    <h2>event-new</h2><code>/groups/:groupSlug/events/new</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/21-event-new.png"><img loading="lazy" width="390" height="844" src="screenshots/21-event-new.png" alt="event-new: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/21-event-new.png">Viewport PNG</a> · <a href="screenshots/full/21-event-new.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/events/new</code><p>HTTP 200; layout 390 × 844; content 390 × 1100</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="series-new /groups/:groupslug/events/series/new default" data-overflow="false">
+    <h2>series-new</h2><code>/groups/:groupSlug/events/series/new</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/22-series-new.png"><img loading="lazy" width="390" height="844" src="screenshots/22-series-new.png" alt="series-new: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/22-series-new.png">Viewport PNG</a> · <a href="screenshots/full/22-series-new.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/events/series/new</code><p>HTTP 200; layout 390 × 844; content 390 × 1700</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="destinations /groups/:groupslug/events/destinations default" data-overflow="false">
+    <h2>destinations</h2><code>/groups/:groupSlug/events/destinations</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/23-destinations.png"><img loading="lazy" width="390" height="844" src="screenshots/23-destinations.png" alt="destinations: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/23-destinations.png">Viewport PNG</a> · <a href="screenshots/full/23-destinations.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/events/destinations</code><p>HTTP 200; layout 390 × 844; content 390 × 1265</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="occurrence /groups/:groupslug/:eventslug recurring occurrence" data-overflow="false">
+    <h2>occurrence</h2><code>/groups/:groupSlug/:eventSlug</code><p>recurring occurrence</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/24-occurrence.png"><img loading="lazy" width="390" height="844" src="screenshots/24-occurrence.png" alt="occurrence: recurring occurrence, 390px mobile viewport"></a>
+    <p><a href="screenshots/24-occurrence.png">Viewport PNG</a> · <a href="screenshots/full/24-occurrence.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/community-practice</code><p>HTTP 200; layout 390 × 844; content 390 × 1841</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="occurrence-edit /groups/:groupslug/:eventslug/edit default" data-overflow="false">
+    <h2>occurrence-edit</h2><code>/groups/:groupSlug/:eventSlug/edit</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/25-occurrence-edit.png"><img loading="lazy" width="390" height="844" src="screenshots/25-occurrence-edit.png" alt="occurrence-edit: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/25-occurrence-edit.png">Viewport PNG</a> · <a href="screenshots/full/25-occurrence-edit.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/community-practice/edit</code><p>HTTP 200; layout 390 × 844; content 390 × 1092</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="series-edit /groups/:groupslug/:eventslug/recurring default" data-overflow="false">
+    <h2>series-edit</h2><code>/groups/:groupSlug/:eventSlug/recurring</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/26-series-edit.png"><img loading="lazy" width="390" height="844" src="screenshots/26-series-edit.png" alt="series-edit: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/26-series-edit.png">Viewport PNG</a> · <a href="screenshots/full/26-series-edit.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/community-practice/recurring</code><p>HTTP 200; layout 390 × 844; content 390 × 2008</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="occurrence-populated /groups/:groupslug/:eventslug saved attendance and rides" data-overflow="false">
+    <h2>occurrence-populated</h2><code>/groups/:groupSlug/:eventSlug</code><p>saved attendance and rides</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/27-occurrence-populated.png"><img loading="lazy" width="390" height="844" src="screenshots/27-occurrence-populated.png" alt="occurrence-populated: saved attendance and rides, 390px mobile viewport"></a>
+    <p><a href="screenshots/27-occurrence-populated.png">Viewport PNG</a> · <a href="screenshots/full/27-occurrence-populated.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/match-club/match-event</code><p>HTTP 200; layout 390 × 844; content 390 × 1901</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="occurrence-attendance-editor /groups/:groupslug/:eventslug expanded attendance" data-overflow="false">
+    <h2>occurrence-attendance-editor</h2><code>/groups/:groupSlug/:eventSlug</code><p>expanded attendance</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/28-occurrence-attendance-editor.png"><img loading="lazy" width="390" height="844" src="screenshots/28-occurrence-attendance-editor.png" alt="occurrence-attendance-editor: expanded attendance, 390px mobile viewport"></a>
+    <p><a href="screenshots/28-occurrence-attendance-editor.png">Viewport PNG</a> · <a href="screenshots/full/28-occurrence-attendance-editor.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/match-club/match-event</code><p>HTTP same-page state; layout 390 × 844; content 390 × 2050</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="household /households/:householdslug default" data-overflow="true">
+    <h2>household</h2><code>/households/:householdSlug</code><p>default</p>
+    <p>390 × 844 · App shell · <strong>Layout expands to 506px</strong></p>
+    <a href="screenshots/29-household.png"><img loading="lazy" width="390" height="844" src="screenshots/29-household.png" alt="household: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/29-household.png">Viewport PNG</a> · <a href="screenshots/full/29-household.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/example-household</code><p>HTTP 200; layout 506 × 1096; content 506 × 1382</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="household-settings /households/:householdslug/settings default" data-overflow="false">
+    <h2>household-settings</h2><code>/households/:householdSlug/settings</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/30-household-settings.png"><img loading="lazy" width="390" height="844" src="screenshots/30-household-settings.png" alt="household-settings: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/30-household-settings.png">Viewport PNG</a> · <a href="screenshots/full/30-household-settings.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/example-household/settings</code><p>HTTP 200; layout 390 × 844; content 390 × 1033</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="locations /households/:householdslug/locations default" data-overflow="false">
+    <h2>locations</h2><code>/households/:householdSlug/locations</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/31-locations.png"><img loading="lazy" width="390" height="844" src="screenshots/31-locations.png" alt="locations: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/31-locations.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/example-household/locations</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="location-add /households/:householdslug/locations/add default" data-overflow="false">
+    <h2>location-add</h2><code>/households/:householdSlug/locations/add</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/32-location-add.png"><img loading="lazy" width="390" height="844" src="screenshots/32-location-add.png" alt="location-add: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/32-location-add.png">Viewport PNG</a> · <a href="screenshots/full/32-location-add.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/example-household/locations/add</code><p>HTTP 200; layout 390 × 844; content 390 × 1151</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="location-edit /households/:householdslug/locations/:locationslug/edit default" data-overflow="false">
+    <h2>location-edit</h2><code>/households/:householdSlug/locations/:locationSlug/edit</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/33-location-edit.png"><img loading="lazy" width="390" height="844" src="screenshots/33-location-edit.png" alt="location-edit: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/33-location-edit.png">Viewport PNG</a> · <a href="screenshots/full/33-location-edit.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/example-household/locations/home-pickup/edit</code><p>HTTP 200; layout 390 × 844; content 390 × 1151</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="connections /households/:householdslug/connections default" data-overflow="false">
+    <h2>connections</h2><code>/households/:householdSlug/connections</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/34-connections.png"><img loading="lazy" width="390" height="844" src="screenshots/34-connections.png" alt="connections: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/34-connections.png">Viewport PNG</a> · <a href="screenshots/full/34-connections.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/example-household/connections</code><p>HTTP 200; layout 390 × 844; content 390 × 1471</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="carpools /households/:householdslug/carpools default" data-overflow="false">
+    <h2>carpools</h2><code>/households/:householdSlug/carpools</code><p>default</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/35-carpools.png"><img loading="lazy" width="390" height="844" src="screenshots/35-carpools.png" alt="carpools: default, 390px mobile viewport"></a>
+    <p><a href="screenshots/35-carpools.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/example-household/carpools</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="household-other-context /households/:householdslug url household differs from header selection" data-overflow="true">
+    <h2>household-other-context</h2><code>/households/:householdSlug</code><p>URL household differs from header selection</p>
+    <p>390 × 844 · App shell · <strong>Layout expands to 506px</strong></p>
+    <a href="screenshots/36-household-other-context.png"><img loading="lazy" width="390" height="844" src="screenshots/36-household-other-context.png" alt="household-other-context: URL household differs from header selection, 390px mobile viewport"></a>
+    <p><a href="screenshots/36-household-other-context.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/other-own-household</code><p>HTTP 200; layout 506 × 1096; content 506 × 1096</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="carpool-detail /households/:householdslug/carpools/:carpoolid pending invitation" data-overflow="false">
+    <h2>carpool-detail</h2><code>/households/:householdSlug/carpools/:carpoolId</code><p>pending invitation</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/37-carpool-detail.png"><img loading="lazy" width="390" height="844" src="screenshots/37-carpool-detail.png" alt="carpool-detail: pending invitation, 390px mobile viewport"></a>
+    <p><a href="screenshots/37-carpool-detail.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/example-household/carpools/98b3bff1-a334-46e1-997c-2b52a3303875</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="group-invitation-open /group-invitations/open missing invitation fragment" data-overflow="false">
+    <h2>group-invitation-open</h2><code>/group-invitations/open</code><p>missing invitation fragment</p>
+    <p>390 × 844 · Standalone</p>
+    <a href="screenshots/38-group-invitation-open.png"><img loading="lazy" width="390" height="844" src="screenshots/38-group-invitation-open.png" alt="group-invitation-open: missing invitation fragment, 390px mobile viewport"></a>
+    <p><a href="screenshots/38-group-invitation-open.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/group-invitations/open</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: </p></details>
+  </article>
+<article data-search="group-invitation-accept /group-invitations/accept invitation preview" data-overflow="false">
+    <h2>group-invitation-accept</h2><code>/group-invitations/accept</code><p>invitation preview</p>
+    <p>390 × 844 · Standalone</p>
+    <a href="screenshots/39-group-invitation-accept.png"><img loading="lazy" width="390" height="844" src="screenshots/39-group-invitation-accept.png" alt="group-invitation-accept: invitation preview, 390px mobile viewport"></a>
+    <p><a href="screenshots/39-group-invitation-accept.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/group-invitations/accept</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: </p></details>
+  </article>
+<article data-search="household-invitation-open /household-invitations/open missing invitation fragment" data-overflow="false">
+    <h2>household-invitation-open</h2><code>/household-invitations/open</code><p>missing invitation fragment</p>
+    <p>390 × 844 · Standalone</p>
+    <a href="screenshots/40-household-invitation-open.png"><img loading="lazy" width="390" height="844" src="screenshots/40-household-invitation-open.png" alt="household-invitation-open: missing invitation fragment, 390px mobile viewport"></a>
+    <p><a href="screenshots/40-household-invitation-open.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/household-invitations/open</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: </p></details>
+  </article>
+<article data-search="household-invitation-accept /household-invitations/accept unavailable invitation for current account" data-overflow="false">
+    <h2>household-invitation-accept</h2><code>/household-invitations/accept</code><p>unavailable invitation for current account</p>
+    <p>390 × 844 · Standalone</p>
+    <a href="screenshots/41-household-invitation-accept.png"><img loading="lazy" width="390" height="844" src="screenshots/41-household-invitation-accept.png" alt="household-invitation-accept: unavailable invitation for current account, 390px mobile viewport"></a>
+    <p><a href="screenshots/41-household-invitation-accept.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/household-invitations/accept</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: </p></details>
+  </article>
+<article data-search="household-320 /households/:householdslug 320px layout" data-overflow="true">
+    <h2>household-320</h2><code>/households/:householdSlug</code><p>320px layout</p>
+    <p>320 × 844 · App shell · <strong>Layout expands to 506px</strong></p>
+    <a href="screenshots/42-household-320.png"><img loading="lazy" width="320" height="844" src="screenshots/42-household-320.png" alt="household-320: 320px layout, 320px mobile viewport"></a>
+    <p><a href="screenshots/42-household-320.png">Viewport PNG</a> · <a href="screenshots/full/42-household-320.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/households/example-household</code><p>HTTP 200; layout 506 × 1335; content 506 × 1470</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="events-320 /groups/:groupslug/events 320px layout" data-overflow="false">
+    <h2>events-320</h2><code>/groups/:groupSlug/events</code><p>320px layout</p>
+    <p>320 × 844 · App shell</p>
+    <a href="screenshots/43-events-320.png"><img loading="lazy" width="320" height="844" src="screenshots/43-events-320.png" alt="events-320: 320px layout, 320px mobile viewport"></a>
+    <p><a href="screenshots/43-events-320.png">Viewport PNG</a> · <a href="screenshots/full/43-events-320.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/events?date=2026-10-08&amp;view=listWeek</code><p>HTTP 200; layout 320 × 844; content 320 × 1076</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="group-as-member /groups/:groupslug group member" data-overflow="false">
+    <h2>group-as-member</h2><code>/groups/:groupSlug</code><p>group Member</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/44-group-as-member.png"><img loading="lazy" width="390" height="844" src="screenshots/44-group-as-member.png" alt="group-as-member: group Member, 390px mobile viewport"></a>
+    <p><a href="screenshots/44-group-as-member.png">Viewport PNG</a> · <a href="screenshots/full/44-group-as-member.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club</code><p>HTTP 200; layout 390 × 844; content 390 × 1895</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="event-new-as-member /groups/:groupslug/events/new permission notice; no mutation controls" data-overflow="false">
+    <h2>event-new-as-member</h2><code>/groups/:groupSlug/events/new</code><p>permission notice; no mutation controls</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/45-event-new-as-member.png"><img loading="lazy" width="390" height="844" src="screenshots/45-event-new-as-member.png" alt="event-new-as-member: permission notice; no mutation controls, 390px mobile viewport"></a>
+    <p><a href="screenshots/45-event-new-as-member.png">Viewport PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/events/new</code><p>HTTP 200; layout 390 × 844; content 390 × 844</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="group-settings-as-member /groups/:groupslug/settings generic 404" data-overflow="false">
+    <h2>group-settings-as-member</h2><code>/groups/:groupSlug/settings</code><p>generic 404</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/46-group-settings-as-member.png"><img loading="lazy" width="390" height="844" src="screenshots/46-group-settings-as-member.png" alt="group-settings-as-member: generic 404, 390px mobile viewport"></a>
+    <p><a href="screenshots/46-group-settings-as-member.png">Viewport PNG</a> · <a href="screenshots/full/46-group-settings-as-member.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/route-review-club/settings</code><p>HTTP 404; layout 390 × 844; content 390 × 989</p><p>Header household: Example household</p></details>
+  </article>
+<article data-search="unknown-group /groups/:groupslug generic 404" data-overflow="false">
+    <h2>unknown-group</h2><code>/groups/:groupSlug</code><p>generic 404</p>
+    <p>390 × 844 · App shell</p>
+    <a href="screenshots/47-unknown-group.png"><img loading="lazy" width="390" height="844" src="screenshots/47-unknown-group.png" alt="unknown-group: generic 404, 390px mobile viewport"></a>
+    <p><a href="screenshots/47-unknown-group.png">Viewport PNG</a> · <a href="screenshots/full/47-unknown-group.png">Full page PNG</a></p>
+    <details><summary>URL and capture details</summary><code>/groups/missing-group</code><p>HTTP 404; layout 390 × 844; content 390 × 989</p><p>Header household: Example household</p></details>
+  </article></div></main>
+<script>const search=document.querySelector('#search'),overflow=document.querySelector('#overflow'),cards=[...document.querySelectorAll('article')];function filter(){const query=search.value.toLowerCase();let count=0;for(const card of cards){card.hidden=!card.dataset.search.includes(query)||(overflow.checked&&card.dataset.overflow!=='true');if(!card.hidden)count++}document.querySelector('#count').textContent=count+' screenshots'}search.addEventListener('input',filter);overflow.addEventListener('change',filter);</script></body></html>

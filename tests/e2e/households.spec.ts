@@ -14,7 +14,7 @@ async function create(page: Page, name: string) {
   await form.getByLabel("Last name", { exact: true }).fill("Example");
   await form.getByLabel("Household name", { exact: true }).fill(name);
   await page.getByRole("button", { name: "Create household", exact: true }).click();
-  await expect(page).toHaveURL(/\/households\/[a-f0-9-]+$/);
+  await expect(page).toHaveURL(/\/households\/[a-z0-9-]+$/);
 }
 test.beforeEach(async ({ request }) => { await request.post("http://127.0.0.1:54329/test/reset"); });
 test("mocked: onboarding errors and pending state recover, linked adult exists", async ({ page }) => {
@@ -30,18 +30,35 @@ test("mocked: onboarding errors and pending state recover, linked adult exists",
   await expect(page.getByText("Your role: Owner")).toBeVisible();
   await page.reload(); await expect(page.getByRole("heading", { name: "Slow household", exact: true })).toBeVisible();
 });
-test("mocked: participant edits, confirmed archival, and household switching", async ({ page }) => {
+test("mocked: read-only participant cards, creation, and household switching", async ({ page }) => {
   await login(page, "new@example.com", /\/onboarding$/); await create(page, "First home");
-  const add = page.locator("form").filter({ has: page.getByRole("button", { name: "Add participant", exact: true }) });
+  const toggle = page.locator("#participants").getByRole("button", { name: "Add participant", exact: true });
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator("#participants form")).toHaveCount(0);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  const add = page.locator("#participants form");
+  await expect(add.getByLabel("First name", { exact: true })).toBeFocused();
+  await add.getByLabel("First name", { exact: true }).fill("Discarded draft");
+  await add.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(add).toHaveCount(0);
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(toggle).toBeFocused();
+  await expect(page.getByRole("heading", { name: "Discarded draft", exact: true })).toHaveCount(0);
+  await toggle.click();
+  await expect(add.getByLabel("First name", { exact: true })).toHaveValue("");
   await add.getByLabel("First name", { exact: true }).fill("Casey"); await add.getByLabel("Last name", { exact: true }).fill("Example");
-  await add.getByLabel("Participant type").selectOption("child"); await add.getByRole("button", { name: "Add participant" }).click();
+  await add.getByLabel("Participant type").selectOption("child"); await add.getByRole("button", { name: "Save participant" }).click();
   const person = page.locator("article").filter({ has: page.getByRole("heading", { name: "Casey Example" }) });
-  await expect(person).toBeVisible(); await person.getByLabel("First name", { exact: true }).fill("Updated");
-  await person.getByRole("button", { name: "Save participant" }).click();
-  const updated = page.locator("article").filter({ has: page.getByRole("heading", { name: "Updated Example" }) });
-  await expect(updated).toBeVisible();
-  page.once("dialog", dialog => dialog.dismiss()); await updated.getByRole("button", { name: "Remove participant" }).click(); await expect(updated).toBeVisible();
-  page.once("dialog", dialog => dialog.accept()); await updated.getByRole("button", { name: "Remove participant" }).click(); await expect(updated).toHaveCount(0);
+  await expect(person).toBeVisible();
+  await expect(person.getByText("Child", { exact: true })).toBeVisible();
+  await expect(page.locator("#participants article form, #participants article input, #participants article select, #participants article textarea, #participants article button")).toHaveCount(0);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(add).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Remove participant", exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(person).toBeVisible();
   await page.goto("/onboarding"); await create(page, "Second home");
   const firstId = await page.getByLabel("Household", { exact: true }).locator("option").filter({ hasText: "First home" }).getAttribute("value");
   await page.getByLabel("Household", { exact: true }).selectOption(firstId!);
@@ -49,8 +66,15 @@ test("mocked: participant edits, confirmed archival, and household switching", a
 });
 test("mocked: invite survives sign-in, explicit acceptance links adult, Member boundaries and succession", async ({ page, browser }) => {
   await login(page, "adult@example.com"); await page.getByRole("link", { name: "Example household", exact: true }).click();
-  const add = page.locator("form").filter({ has: page.getByRole("button", { name: "Add participant", exact: true }) });
-  await add.getByLabel("First name", { exact: true }).fill("Recipient"); await add.getByLabel("Last name", { exact: true }).fill("Example"); await add.getByRole("button", { name: "Add participant" }).click();
+  const toggle = page.locator("#participants").getByRole("button", { name: "Add participant", exact: true });
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator("#participants form")).toHaveCount(0);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  const add = page.locator("#participants form");
+  await expect(add.getByLabel("First name", { exact: true })).toBeFocused();
+  await add.getByLabel("First name", { exact: true }).fill("Recipient"); await add.getByLabel("Last name", { exact: true }).fill("Example"); await add.getByRole("button", { name: "Save participant" }).click();
+  await page.getByRole("link", { name: "Household settings", exact: true }).click();
   await page.getByLabel("Invited email").fill("recipient@example.com");
   await page.getByLabel("Link adult participant").selectOption({ label: "Recipient Example" });
   await page.getByRole("button", { name: "Create invitation", exact: true }).click();
@@ -66,6 +90,7 @@ test("mocked: invite survives sign-in, explicit acceptance links adult, Member b
   await recipient.getByRole("button", { name: "Accept invitation" }).click();
   await expect(recipient.getByText("Your role: Member")).toBeVisible();
   await expect(recipient.getByRole("heading", { name: "Recipient Example", exact: true })).toHaveCount(1);
+  await recipient.getByRole("link", { name: "Household settings", exact: true }).click();
   await expect(recipient.getByRole("button", { name: "Create invitation" })).toHaveCount(0);
   await expect(recipient.getByRole("button", { name: "Save household name" })).toHaveCount(0);
   await page.reload(); await page.getByRole("button", { name: "Promote to Owner" }).click();
@@ -75,13 +100,14 @@ test("mocked: invite survives sign-in, explicit acceptance links adult, Member b
   recipient.once("dialog", dialog => dialog.accept()); await recipient.getByRole("button", { name: "Leave household" }).click();
   await expect(recipient).toHaveURL(/\/onboarding$/);
   await page.reload(); await expect(page.getByText("Your role: Owner")).toBeVisible();
-  await recipient.goto(page.url()); await expect(recipient.getByRole("heading", { name: "Household unavailable" })).toBeVisible();
+  await recipient.goto(page.url()); await expect(recipient.getByRole("heading", { name: "404", exact: true })).toBeVisible();
   await recipientContext.close();
 });
 test("mocked: revoked invitation rejects without joining; last departure protects archived household", async ({ page, browser }) => {
   await login(page, "adult@example.com"); await page.getByRole("link", { name: "Example household", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Example household", exact: true })).toBeVisible();
   const householdUrl = page.url();
+  await page.getByRole("link", { name: "Household settings", exact: true }).click();
   await page.getByLabel("Invited email").fill("recipient@example.com"); await page.getByRole("button", { name: "Create invitation" }).click();
   const link = await page.getByLabel("Invitation link", { exact: true }).inputValue();
   await page.getByRole("button", { name: "Revoke invitation" }).click();
@@ -91,6 +117,6 @@ test("mocked: revoked invitation rejects without joining; last departure protect
   await expect(recipient.getByRole("button", { name: "Accept invitation" })).toHaveCount(0);
   page.once("dialog", dialog => dialog.accept()); await page.getByRole("button", { name: "Leave household" }).click();
   await expect(page).toHaveURL(/\/onboarding$/);
-  await page.goto(householdUrl); await expect(page.getByRole("heading", { name: "Household unavailable" })).toBeVisible();
+  await page.goto(householdUrl); await expect(page.getByRole("heading", { name: "404", exact: true })).toBeVisible();
   await context.close();
 });

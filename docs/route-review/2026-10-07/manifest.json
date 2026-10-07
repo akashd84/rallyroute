@@ -1,0 +1,2650 @@
+{
+  "generatedAt": "2026-10-07T05:07:16.082Z",
+  "data": "Synthetic mock provider only; no linked database changes or real invitation tokens saved.",
+  "consoleIssues": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "captures": [
+    {
+      "label": "sign-in",
+      "pattern": "/sign-in",
+      "route": "/sign-in",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/sign-in",
+      "state": "signed out",
+      "status": 200,
+      "screenshot": "screenshots/01-sign-in.png",
+      "fullScreenshot": null,
+      "title": "Sign in",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "visualWidth": 390,
+      "shell": false,
+      "links": [
+        {
+          "text": "Join with an invitation code",
+          "href": "/join"
+        }
+      ]
+    },
+    {
+      "label": "sign-in-code",
+      "pattern": "/sign-in",
+      "route": "/sign-in",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/sign-in",
+      "state": "code entry",
+      "status": null,
+      "screenshot": "screenshots/02-sign-in-code.png",
+      "fullScreenshot": null,
+      "title": "Sign in",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "visualWidth": 390,
+      "shell": false,
+      "links": [
+        {
+          "text": "Join with an invitation code",
+          "href": "/join"
+        }
+      ]
+    },
+    {
+      "label": "home",
+      "pattern": "/",
+      "route": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/03-home.png",
+      "fullScreenshot": null,
+      "title": "Home",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/#app-main"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "account",
+      "pattern": "/account",
+      "route": "/account",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/account",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/04-account.png",
+      "fullScreenshot": null,
+      "title": "Your account",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/account#app-main"
+        },
+        {
+          "text": "Join with an invitation code",
+          "href": "/join"
+        },
+        {
+          "text": "Your groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Example household",
+          "href": "/households/example-household"
+        },
+        {
+          "text": "Connections (0 incoming)",
+          "href": "/households/example-household/connections"
+        },
+        {
+          "text": "Carpools",
+          "href": "/households/example-household/carpools"
+        },
+        {
+          "text": "Other own household",
+          "href": "/households/other-own-household"
+        },
+        {
+          "text": "Connections (0 incoming)",
+          "href": "/households/other-own-household/connections"
+        },
+        {
+          "text": "Carpools",
+          "href": "/households/other-own-household/carpools"
+        },
+        {
+          "text": "Create another household",
+          "href": "/onboarding"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "global-calendar",
+      "pattern": "/calendar",
+      "route": "/calendar",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/calendar",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/05-global-calendar.png",
+      "fullScreenshot": null,
+      "title": "Calendar",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/calendar#app-main"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "messages",
+      "pattern": "/messages",
+      "route": "/messages",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/messages",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/06-messages.png",
+      "fullScreenshot": null,
+      "title": "Messages",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/messages#app-main"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "profile",
+      "pattern": "/profile",
+      "route": "/profile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/profile",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/07-profile.png",
+      "fullScreenshot": null,
+      "title": "Profile",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/profile#app-main"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "onboarding",
+      "pattern": "/onboarding",
+      "route": "/onboarding",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/onboarding",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/08-onboarding.png",
+      "fullScreenshot": "screenshots/full/08-onboarding.png",
+      "title": "Set up your household",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1205,
+      "visualWidth": 390,
+      "shell": false,
+      "links": [
+        {
+          "text": "RallyRoute",
+          "href": "/account"
+        },
+        {
+          "text": "Your groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Join with an invitation code",
+          "href": "/join"
+        }
+      ]
+    },
+    {
+      "label": "join",
+      "pattern": "/join",
+      "route": "/join",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/join",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/09-join.png",
+      "fullScreenshot": null,
+      "title": "Join with an invitation code",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/join#app-main"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "groups",
+      "pattern": "/groups",
+      "route": "/groups",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/10-groups.png",
+      "fullScreenshot": null,
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups#app-main"
+        },
+        {
+          "text": "Route review club",
+          "href": "/groups/route-review-club"
+        },
+        {
+          "text": "Match club",
+          "href": "/groups/match-club"
+        },
+        {
+          "text": "Create a group",
+          "href": "/groups/new"
+        },
+        {
+          "text": "Join By Invite Code",
+          "href": "/join"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "group-new",
+      "pattern": "/groups/new",
+      "route": "/groups/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/new",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/11-group-new.png",
+      "fullScreenshot": null,
+      "title": "Create a group",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/new#app-main"
+        },
+        {
+          "text": "Your groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "group",
+      "pattern": "/groups/:groupSlug",
+      "route": "/groups/route-review-club",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/12-group.png",
+      "fullScreenshot": "screenshots/full/12-group.png",
+      "title": "Route review club",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1939,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club#app-main"
+        },
+        {
+          "text": "Your groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Group settings",
+          "href": "/groups/route-review-club/settings"
+        },
+        {
+          "text": "Invite to group",
+          "href": "/group/route-review-club/invite"
+        },
+        {
+          "text": "Share group",
+          "href": "/group/route-review-club/share"
+        },
+        {
+          "text": "Events and destinations",
+          "href": "/groups/route-review-club/events"
+        },
+        {
+          "text": "Community practice",
+          "href": "/groups/route-review-club/community-practice"
+        },
+        {
+          "text": "Edit Occurrence",
+          "href": "/groups/route-review-club/community-practice/edit"
+        },
+        {
+          "text": "Edit Series",
+          "href": "/groups/route-review-club/community-practice/recurring"
+        },
+        {
+          "text": "Community practice",
+          "href": "/groups/route-review-club/community-practice-82c33e69"
+        },
+        {
+          "text": "Edit Occurrence",
+          "href": "/groups/route-review-club/community-practice-82c33e69/edit"
+        },
+        {
+          "text": "Edit Series",
+          "href": "/groups/route-review-club/community-practice-82c33e69/recurring"
+        },
+        {
+          "text": "Community practice",
+          "href": "/groups/route-review-club/community-practice-9b8ef550"
+        },
+        {
+          "text": "Edit Occurrence",
+          "href": "/groups/route-review-club/community-practice-9b8ef550/edit"
+        },
+        {
+          "text": "Edit Series",
+          "href": "/groups/route-review-club/community-practice-9b8ef550/recurring"
+        },
+        {
+          "text": "Example household",
+          "href": "/households/example-household"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "group-settings",
+      "pattern": "/groups/:groupSlug/settings",
+      "route": "/groups/route-review-club/settings",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/settings",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/13-group-settings.png",
+      "fullScreenshot": null,
+      "title": "Group settings",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/settings#app-main"
+        },
+        {
+          "text": "Back to Route review club",
+          "href": "/groups/route-review-club"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "group-members",
+      "pattern": "/groups/:groupSlug/members",
+      "route": "/groups/route-review-club/members",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/members",
+      "state": "placeholder",
+      "status": 200,
+      "screenshot": "screenshots/14-group-members.png",
+      "fullScreenshot": null,
+      "title": "Members",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/members#app-main"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "group-invite",
+      "pattern": "/group/:groupSlug/invite",
+      "route": "/group/route-review-club/invite",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/group/route-review-club/invite",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/15-group-invite.png",
+      "fullScreenshot": null,
+      "title": "Invite to group",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/group/route-review-club/invite#app-main"
+        },
+        {
+          "text": "Back to Route review club",
+          "href": "/groups/route-review-club"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "group-share",
+      "pattern": "/group/:groupSlug/share",
+      "route": "/group/route-review-club/share",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/group/route-review-club/share",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/16-group-share.png",
+      "fullScreenshot": null,
+      "title": "Share group",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/group/route-review-club/share#app-main"
+        },
+        {
+          "text": "Back to Route review club",
+          "href": "/groups/route-review-club"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "events-agenda",
+      "pattern": "/groups/:groupSlug/events",
+      "route": "/groups/route-review-club/events?date=2026-10-08&view=listWeek",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/events?date=2026-10-08&view=listWeek",
+      "state": "mobile Agenda",
+      "status": 200,
+      "screenshot": "screenshots/17-events-agenda.png",
+      "fullScreenshot": "screenshots/full/17-events-agenda.png",
+      "title": "Events and destinations",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 984,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/events?date=2026-10-08&view=listWeek#app-main"
+        },
+        {
+          "text": "Route review club",
+          "href": "/groups/route-review-club"
+        },
+        {
+          "text": "Create Event",
+          "href": "/groups/route-review-club/events/new"
+        },
+        {
+          "text": "Create Series",
+          "href": "/groups/route-review-club/events/series/new"
+        },
+        {
+          "text": "Manage Destinations",
+          "href": "/groups/route-review-club/events/destinations"
+        },
+        {
+          "text": "9:00am – 5:00pm Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice?calendarDate=2026-10-08&calendarView=listWeek"
+        },
+        {
+          "text": "9:00am – 5:00pm Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice-82c33e69?calendarDate=2026-10-08&calendarView=listWeek"
+        },
+        {
+          "text": "9:00am – 5:00pm Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice-9b8ef550?calendarDate=2026-10-08&calendarView=listWeek"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "events-month",
+      "pattern": "/groups/:groupSlug/events",
+      "route": "/groups/route-review-club/events?date=2026-10-08&view=dayGridMonth",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/events?date=2026-10-08&view=dayGridMonth",
+      "state": "month",
+      "status": 200,
+      "screenshot": "screenshots/18-events-month.png",
+      "fullScreenshot": "screenshots/full/18-events-month.png",
+      "title": "Events and destinations",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1015,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/events?date=2026-10-08&view=dayGridMonth#app-main"
+        },
+        {
+          "text": "Route review club",
+          "href": "/groups/route-review-club"
+        },
+        {
+          "text": "Create Event",
+          "href": "/groups/route-review-club/events/new"
+        },
+        {
+          "text": "Create Series",
+          "href": "/groups/route-review-club/events/series/new"
+        },
+        {
+          "text": "Manage Destinations",
+          "href": "/groups/route-review-club/events/destinations"
+        },
+        {
+          "text": "Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice?calendarDate=2026-10-08&calendarView=dayGridMonth"
+        },
+        {
+          "text": "Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice-82c33e69?calendarDate=2026-10-08&calendarView=dayGridMonth"
+        },
+        {
+          "text": "Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice-9b8ef550?calendarDate=2026-10-08&calendarView=dayGridMonth"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "events-week",
+      "pattern": "/groups/:groupSlug/events",
+      "route": "/groups/route-review-club/events?date=2026-10-08&view=timeGridWeek",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/events?date=2026-10-08&view=timeGridWeek",
+      "state": "week",
+      "status": 200,
+      "screenshot": "screenshots/19-events-week.png",
+      "fullScreenshot": "screenshots/full/19-events-week.png",
+      "title": "Events and destinations",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1544,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/events?date=2026-10-08&view=timeGridWeek#app-main"
+        },
+        {
+          "text": "Route review club",
+          "href": "/groups/route-review-club"
+        },
+        {
+          "text": "Create Event",
+          "href": "/groups/route-review-club/events/new"
+        },
+        {
+          "text": "Create Series",
+          "href": "/groups/route-review-club/events/series/new"
+        },
+        {
+          "text": "Manage Destinations",
+          "href": "/groups/route-review-club/events/destinations"
+        },
+        {
+          "text": "9:00 – 5:00 Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice?calendarDate=2026-10-08&calendarView=timeGridWeek"
+        },
+        {
+          "text": "9:00 – 5:00 Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice-82c33e69?calendarDate=2026-10-08&calendarView=timeGridWeek"
+        },
+        {
+          "text": "9:00 – 5:00 Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice-9b8ef550?calendarDate=2026-10-08&calendarView=timeGridWeek"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "events-day",
+      "pattern": "/groups/:groupSlug/events",
+      "route": "/groups/route-review-club/events?date=2026-10-08&view=timeGridDay",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/events?date=2026-10-08&view=timeGridDay",
+      "state": "day",
+      "status": 200,
+      "screenshot": "screenshots/20-events-day.png",
+      "fullScreenshot": "screenshots/full/20-events-day.png",
+      "title": "Events and destinations",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1943,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/events?date=2026-10-08&view=timeGridDay#app-main"
+        },
+        {
+          "text": "Route review club",
+          "href": "/groups/route-review-club"
+        },
+        {
+          "text": "Create Event",
+          "href": "/groups/route-review-club/events/new"
+        },
+        {
+          "text": "Create Series",
+          "href": "/groups/route-review-club/events/series/new"
+        },
+        {
+          "text": "Manage Destinations",
+          "href": "/groups/route-review-club/events/destinations"
+        },
+        {
+          "text": "9:00 – 5:00 Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice?calendarDate=2026-10-08&calendarView=timeGridDay"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "event-new",
+      "pattern": "/groups/:groupSlug/events/new",
+      "route": "/groups/route-review-club/events/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/events/new",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/21-event-new.png",
+      "fullScreenshot": "screenshots/full/21-event-new.png",
+      "title": "Create one-off event",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1100,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/events/new#app-main"
+        },
+        {
+          "text": "Events and destinations",
+          "href": "/groups/route-review-club/events"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "series-new",
+      "pattern": "/groups/:groupSlug/events/series/new",
+      "route": "/groups/route-review-club/events/series/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/events/series/new",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/22-series-new.png",
+      "fullScreenshot": "screenshots/full/22-series-new.png",
+      "title": "Create recurring events",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1700,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/events/series/new#app-main"
+        },
+        {
+          "text": "Events and destinations",
+          "href": "/groups/route-review-club/events"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "destinations",
+      "pattern": "/groups/:groupSlug/events/destinations",
+      "route": "/groups/route-review-club/events/destinations",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/events/destinations",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/23-destinations.png",
+      "fullScreenshot": "screenshots/full/23-destinations.png",
+      "title": "Manage destinations",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1265,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/events/destinations#app-main"
+        },
+        {
+          "text": "Events and destinations",
+          "href": "/groups/route-review-club/events"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "occurrence",
+      "pattern": "/groups/:groupSlug/:eventSlug",
+      "route": "/groups/route-review-club/community-practice",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/community-practice",
+      "state": "recurring occurrence",
+      "status": 200,
+      "screenshot": "screenshots/24-occurrence.png",
+      "fullScreenshot": "screenshots/full/24-occurrence.png",
+      "title": "Community practice",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1841,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/community-practice#app-main"
+        },
+        {
+          "text": "Group events",
+          "href": "/groups/route-review-club/events"
+        },
+        {
+          "text": "Manage household addresses",
+          "href": "/households/example-household/locations"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "occurrence-edit",
+      "pattern": "/groups/:groupSlug/:eventSlug/edit",
+      "route": "/groups/route-review-club/community-practice/edit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/community-practice/edit",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/25-occurrence-edit.png",
+      "fullScreenshot": "screenshots/full/25-occurrence-edit.png",
+      "title": "Edit occurrence",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1092,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/community-practice/edit#app-main"
+        },
+        {
+          "text": "Back to Community practice",
+          "href": "/groups/route-review-club/community-practice"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "series-edit",
+      "pattern": "/groups/:groupSlug/:eventSlug/recurring",
+      "route": "/groups/route-review-club/community-practice/recurring",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/community-practice/recurring",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/26-series-edit.png",
+      "fullScreenshot": "screenshots/full/26-series-edit.png",
+      "title": "Recurring settings",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 2008,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/community-practice/recurring#app-main"
+        },
+        {
+          "text": "Back to Community practice",
+          "href": "/groups/route-review-club/community-practice"
+        },
+        {
+          "text": "Events and destinations",
+          "href": "/groups/route-review-club/events"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "occurrence-populated",
+      "pattern": "/groups/:groupSlug/:eventSlug",
+      "route": "/groups/match-club/match-event",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/match-club/match-event",
+      "state": "saved attendance and rides",
+      "status": 200,
+      "screenshot": "screenshots/27-occurrence-populated.png",
+      "fullScreenshot": "screenshots/full/27-occurrence-populated.png",
+      "title": "Match event",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1901,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/match-club/match-event#app-main"
+        },
+        {
+          "text": "Group events",
+          "href": "/groups/match-club/events"
+        },
+        {
+          "text": "Manage household addresses",
+          "href": "/households/example-household/locations"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "occurrence-attendance-editor",
+      "pattern": "/groups/:groupSlug/:eventSlug",
+      "route": "/groups/match-club/match-event",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/match-club/match-event",
+      "state": "expanded attendance",
+      "status": null,
+      "screenshot": "screenshots/28-occurrence-attendance-editor.png",
+      "fullScreenshot": "screenshots/full/28-occurrence-attendance-editor.png",
+      "title": "Match event",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 2050,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/match-club/match-event#app-main"
+        },
+        {
+          "text": "Group events",
+          "href": "/groups/match-club/events"
+        },
+        {
+          "text": "Manage household addresses",
+          "href": "/households/example-household/locations"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "household",
+      "pattern": "/households/:householdSlug",
+      "route": "/households/example-household",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/households/example-household",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/29-household.png",
+      "fullScreenshot": "screenshots/full/29-household.png",
+      "title": "Example household",
+      "width": 506,
+      "height": 1096,
+      "contentWidth": 506,
+      "contentHeight": 1382,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/example-household#app-main"
+        },
+        {
+          "text": "Your account",
+          "href": "/account"
+        },
+        {
+          "text": "Connections",
+          "href": "/households/example-household/connections"
+        },
+        {
+          "text": "Carpools",
+          "href": "/households/example-household/carpools"
+        },
+        {
+          "text": "Your groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Participants",
+          "href": "/households/example-household#participants"
+        },
+        {
+          "text": "Household settings",
+          "href": "/households/example-household/settings"
+        },
+        {
+          "text": "Add address",
+          "href": "/households/example-household/locations/add"
+        },
+        {
+          "text": "Edit address",
+          "href": "/households/example-household/locations/home-pickup/edit"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "household-settings",
+      "pattern": "/households/:householdSlug/settings",
+      "route": "/households/example-household/settings",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/households/example-household/settings",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/30-household-settings.png",
+      "fullScreenshot": "screenshots/full/30-household-settings.png",
+      "title": "Household settings",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1033,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/example-household/settings#app-main"
+        },
+        {
+          "text": "Your household",
+          "href": "/households/example-household"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "locations",
+      "pattern": "/households/:householdSlug/locations",
+      "route": "/households/example-household/locations",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/households/example-household/locations",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/31-locations.png",
+      "fullScreenshot": null,
+      "title": "Pickup and dropoff addresses",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/example-household/locations#app-main"
+        },
+        {
+          "text": "Household",
+          "href": "/households/example-household"
+        },
+        {
+          "text": "Add address",
+          "href": "/households/example-household/locations/add"
+        },
+        {
+          "text": "Edit address",
+          "href": "/households/example-household/locations/home-pickup/edit"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "location-add",
+      "pattern": "/households/:householdSlug/locations/add",
+      "route": "/households/example-household/locations/add",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/households/example-household/locations/add",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/32-location-add.png",
+      "fullScreenshot": "screenshots/full/32-location-add.png",
+      "title": "Add address",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1151,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/example-household/locations/add#app-main"
+        },
+        {
+          "text": "Saved addresses",
+          "href": "/households/example-household/locations"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "location-edit",
+      "pattern": "/households/:householdSlug/locations/:locationSlug/edit",
+      "route": "/households/example-household/locations/home-pickup/edit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/households/example-household/locations/home-pickup/edit",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/33-location-edit.png",
+      "fullScreenshot": "screenshots/full/33-location-edit.png",
+      "title": "Edit address",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1151,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/example-household/locations/home-pickup/edit#app-main"
+        },
+        {
+          "text": "Saved addresses",
+          "href": "/households/example-household/locations"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "connections",
+      "pattern": "/households/:householdSlug/connections",
+      "route": "/households/example-household/connections",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/households/example-household/connections",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/34-connections.png",
+      "fullScreenshot": "screenshots/full/34-connections.png",
+      "title": "Example household connections",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1471,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/example-household/connections#app-main"
+        },
+        {
+          "text": "Your household",
+          "href": "/households/example-household"
+        },
+        {
+          "text": "Your account",
+          "href": "/account"
+        },
+        {
+          "text": "Example household",
+          "href": "/households/example-household/connections"
+        },
+        {
+          "text": "Other own household",
+          "href": "/households/other-own-household/connections"
+        },
+        {
+          "text": "Your carpools",
+          "href": "/households/example-household/carpools"
+        },
+        {
+          "text": "Manage saved addresses",
+          "href": "/households/example-household/locations"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "carpools",
+      "pattern": "/households/:householdSlug/carpools",
+      "route": "/households/example-household/carpools",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/households/example-household/carpools",
+      "state": "default",
+      "status": 200,
+      "screenshot": "screenshots/35-carpools.png",
+      "fullScreenshot": null,
+      "title": "Example household carpools",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/example-household/carpools#app-main"
+        },
+        {
+          "text": "Your household",
+          "href": "/households/example-household"
+        },
+        {
+          "text": "Create a carpool from an accepted connection",
+          "href": "/households/example-household/connections"
+        },
+        {
+          "text": "Compatible household — Match club",
+          "href": "/households/example-household/carpools/98b3bff1-a334-46e1-997c-2b52a3303875"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "household-other-context",
+      "pattern": "/households/:householdSlug",
+      "route": "/households/other-own-household",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/households/other-own-household",
+      "state": "URL household differs from header selection",
+      "status": 200,
+      "screenshot": "screenshots/36-household-other-context.png",
+      "fullScreenshot": null,
+      "title": "Other own household",
+      "width": 506,
+      "height": 1096,
+      "contentWidth": 506,
+      "contentHeight": 1096,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/other-own-household#app-main"
+        },
+        {
+          "text": "Your account",
+          "href": "/account"
+        },
+        {
+          "text": "Connections",
+          "href": "/households/other-own-household/connections"
+        },
+        {
+          "text": "Carpools",
+          "href": "/households/other-own-household/carpools"
+        },
+        {
+          "text": "Your groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Participants",
+          "href": "/households/other-own-household#participants"
+        },
+        {
+          "text": "Household settings",
+          "href": "/households/other-own-household/settings"
+        },
+        {
+          "text": "Add address",
+          "href": "/households/other-own-household/locations/add"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "carpool-detail",
+      "pattern": "/households/:householdSlug/carpools/:carpoolId",
+      "route": "/households/example-household/carpools/98b3bff1-a334-46e1-997c-2b52a3303875",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/households/example-household/carpools/98b3bff1-a334-46e1-997c-2b52a3303875",
+      "state": "pending invitation",
+      "status": 200,
+      "screenshot": "screenshots/37-carpool-detail.png",
+      "fullScreenshot": null,
+      "title": "Carpool with Compatible household",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/example-household/carpools/98b3bff1-a334-46e1-997c-2b52a3303875#app-main"
+        },
+        {
+          "text": "Your carpools",
+          "href": "/households/example-household/carpools"
+        },
+        {
+          "text": "Contacts and pickup sharing",
+          "href": "/households/example-household/connections"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "group-invitation-open",
+      "pattern": "/group-invitations/open",
+      "route": "/group-invitations/open",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/group-invitations/open",
+      "state": "missing invitation fragment",
+      "status": 200,
+      "screenshot": "screenshots/38-group-invitation-open.png",
+      "fullScreenshot": null,
+      "title": "Group invitation",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "visualWidth": 390,
+      "shell": false,
+      "links": [
+        {
+          "text": "Your account",
+          "href": "/account"
+        }
+      ]
+    },
+    {
+      "label": "group-invitation-accept",
+      "pattern": "/group-invitations/accept",
+      "route": "/group-invitations/accept",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/group-invitations/accept",
+      "state": "invitation preview",
+      "status": 200,
+      "screenshot": "screenshots/39-group-invitation-accept.png",
+      "fullScreenshot": null,
+      "title": "Join a group",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "visualWidth": 390,
+      "shell": false,
+      "links": [
+        {
+          "text": "Your groups",
+          "href": "/groups"
+        }
+      ]
+    },
+    {
+      "label": "household-invitation-open",
+      "pattern": "/household-invitations/open",
+      "route": "/household-invitations/open",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/household-invitations/open",
+      "state": "missing invitation fragment",
+      "status": 200,
+      "screenshot": "screenshots/40-household-invitation-open.png",
+      "fullScreenshot": null,
+      "title": "Household invitation",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "visualWidth": 390,
+      "shell": false,
+      "links": [
+        {
+          "text": "Your account",
+          "href": "/account"
+        }
+      ]
+    },
+    {
+      "label": "household-invitation-accept",
+      "pattern": "/household-invitations/accept",
+      "route": "/household-invitations/accept",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/household-invitations/accept",
+      "state": "unavailable invitation for current account",
+      "status": 200,
+      "screenshot": "screenshots/41-household-invitation-accept.png",
+      "fullScreenshot": null,
+      "title": "Join a household",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "visualWidth": 390,
+      "shell": false,
+      "links": [
+        {
+          "text": "RallyRoute",
+          "href": "/account"
+        },
+        {
+          "text": "Create a separate household",
+          "href": "/onboarding"
+        }
+      ]
+    },
+    {
+      "label": "household-320",
+      "pattern": "/households/:householdSlug",
+      "route": "/households/example-household",
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "finalUrl": "/households/example-household",
+      "state": "320px layout",
+      "status": 200,
+      "screenshot": "screenshots/42-household-320.png",
+      "fullScreenshot": "screenshots/full/42-household-320.png",
+      "title": "Example household",
+      "width": 506,
+      "height": 1335,
+      "contentWidth": 506,
+      "contentHeight": 1470,
+      "headerHousehold": "Example household",
+      "visualWidth": 320,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/households/example-household#app-main"
+        },
+        {
+          "text": "Your account",
+          "href": "/account"
+        },
+        {
+          "text": "Connections",
+          "href": "/households/example-household/connections"
+        },
+        {
+          "text": "Carpools",
+          "href": "/households/example-household/carpools"
+        },
+        {
+          "text": "Your groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Participants",
+          "href": "/households/example-household#participants"
+        },
+        {
+          "text": "Household settings",
+          "href": "/households/example-household/settings"
+        },
+        {
+          "text": "Add address",
+          "href": "/households/example-household/locations/add"
+        },
+        {
+          "text": "Edit address",
+          "href": "/households/example-household/locations/home-pickup/edit"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "events-320",
+      "pattern": "/groups/:groupSlug/events",
+      "route": "/groups/route-review-club/events?date=2026-10-08&view=listWeek",
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/events?date=2026-10-08&view=listWeek",
+      "state": "320px layout",
+      "status": 200,
+      "screenshot": "screenshots/43-events-320.png",
+      "fullScreenshot": "screenshots/full/43-events-320.png",
+      "title": "Events and destinations",
+      "width": 320,
+      "height": 844,
+      "contentWidth": 320,
+      "contentHeight": 1076,
+      "headerHousehold": "Example household",
+      "visualWidth": 320,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/events?date=2026-10-08&view=listWeek#app-main"
+        },
+        {
+          "text": "Route review club",
+          "href": "/groups/route-review-club"
+        },
+        {
+          "text": "Create Event",
+          "href": "/groups/route-review-club/events/new"
+        },
+        {
+          "text": "Create Series",
+          "href": "/groups/route-review-club/events/series/new"
+        },
+        {
+          "text": "Manage Destinations",
+          "href": "/groups/route-review-club/events/destinations"
+        },
+        {
+          "text": "9:00am – 5:00pm Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice?calendarDate=2026-10-08&calendarView=listWeek"
+        },
+        {
+          "text": "9:00am – 5:00pm Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice-82c33e69?calendarDate=2026-10-08&calendarView=listWeek"
+        },
+        {
+          "text": "9:00am – 5:00pm Community practice · Recurring",
+          "href": "/groups/route-review-club/community-practice-9b8ef550?calendarDate=2026-10-08&calendarView=listWeek"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "group-as-member",
+      "pattern": "/groups/:groupSlug",
+      "route": "/groups/route-review-club",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club",
+      "state": "group Member",
+      "status": 200,
+      "screenshot": "screenshots/44-group-as-member.png",
+      "fullScreenshot": "screenshots/full/44-group-as-member.png",
+      "title": "Route review club",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 1895,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club#app-main"
+        },
+        {
+          "text": "Your groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Events and destinations",
+          "href": "/groups/route-review-club/events"
+        },
+        {
+          "text": "Community practice",
+          "href": "/groups/route-review-club/community-practice"
+        },
+        {
+          "text": "Edit Occurrence",
+          "href": "/groups/route-review-club/community-practice/edit"
+        },
+        {
+          "text": "Edit Series",
+          "href": "/groups/route-review-club/community-practice/recurring"
+        },
+        {
+          "text": "Community practice",
+          "href": "/groups/route-review-club/community-practice-82c33e69"
+        },
+        {
+          "text": "Edit Occurrence",
+          "href": "/groups/route-review-club/community-practice-82c33e69/edit"
+        },
+        {
+          "text": "Edit Series",
+          "href": "/groups/route-review-club/community-practice-82c33e69/recurring"
+        },
+        {
+          "text": "Community practice",
+          "href": "/groups/route-review-club/community-practice-9b8ef550"
+        },
+        {
+          "text": "Edit Occurrence",
+          "href": "/groups/route-review-club/community-practice-9b8ef550/edit"
+        },
+        {
+          "text": "Edit Series",
+          "href": "/groups/route-review-club/community-practice-9b8ef550/recurring"
+        },
+        {
+          "text": "Example household",
+          "href": "/households/example-household"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "event-new-as-member",
+      "pattern": "/groups/:groupSlug/events/new",
+      "route": "/groups/route-review-club/events/new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/events/new",
+      "state": "permission notice; no mutation controls",
+      "status": 200,
+      "screenshot": "screenshots/45-event-new-as-member.png",
+      "fullScreenshot": null,
+      "title": "Create one-off event",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 844,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/events/new#app-main"
+        },
+        {
+          "text": "Events and destinations",
+          "href": "/groups/route-review-club/events"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "group-settings-as-member",
+      "pattern": "/groups/:groupSlug/settings",
+      "route": "/groups/route-review-club/settings",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/route-review-club/settings",
+      "state": "generic 404",
+      "status": 404,
+      "screenshot": "screenshots/46-group-settings-as-member.png",
+      "fullScreenshot": "screenshots/full/46-group-settings-as-member.png",
+      "title": "404",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 989,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/route-review-club/settings#app-main"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    },
+    {
+      "label": "unknown-group",
+      "pattern": "/groups/:groupSlug",
+      "route": "/groups/missing-group",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "finalUrl": "/groups/missing-group",
+      "state": "generic 404",
+      "status": 404,
+      "screenshot": "screenshots/47-unknown-group.png",
+      "fullScreenshot": "screenshots/full/47-unknown-group.png",
+      "title": "404",
+      "width": 390,
+      "height": 844,
+      "contentWidth": 390,
+      "contentHeight": 989,
+      "headerHousehold": "Example household",
+      "visualWidth": 390,
+      "shell": true,
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "/groups/missing-group#app-main"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Groups",
+          "href": "/groups"
+        },
+        {
+          "text": "Calendar",
+          "href": "/calendar"
+        },
+        {
+          "text": "Messages",
+          "href": "/messages"
+        },
+        {
+          "text": "Profile",
+          "href": "/profile"
+        }
+      ]
+    }
+  ]
+}

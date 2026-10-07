@@ -1,4 +1,6 @@
 "use server";
+import { eventUrlForId } from "@/lib/events/urls";
+import { groupLinkRecoveryPath } from "@/lib/groups/paths";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { eventSchema } from "@/lib/events/validation";
@@ -132,12 +134,13 @@ export async function eventAction(input: unknown): Promise<HouseholdResult> {
       };
     revalidatePath("/groups", "layout");
     revalidatePath("/households", "layout");
+    const eventUrl = value.command === "event-save" && result.data ? await eventUrlForId(supabase, value.groupId, result.data) : null;
     return {
       ok: true,
       message: "Saved.",
       destination:
         value.command === "event-save"
-          ? `/groups/${value.groupId}/events/${result.data}`
+          ? eventUrl ?? groupLinkRecoveryPath
           : undefined,
     };
   } catch {

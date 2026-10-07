@@ -1,4 +1,6 @@
 "use server";
+import { householdUrlForId } from "@/lib/households/urls";
+import { householdLinkRecoveryPath } from "@/lib/households/paths";
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -42,6 +44,7 @@ export async function householdAction(input: unknown): Promise<HouseholdResult> 
     if (authError || !user) return { ok: false, message: "Sign in before making this change.", destination: "/sign-in" };
     let error: { code?: string } | null = null;
     let destination: string | undefined;
+    let destinationHouseholdId: string | undefined;
     let invitationPath: string | undefined;
     let invitationCode: string | undefined;
     switch (value.command) {
@@ -51,13 +54,13 @@ export async function householdAction(input: unknown): Promise<HouseholdResult> 
       case "create": {
         const result = await supabase.rpc("onboard_household", { p_display_name: value.displayName, p_first_name: value.firstName, p_last_name: value.lastName, p_request_id: value.requestId });
         error = result.error;
-        if (!error && result.data) destination = `/households/${result.data}`;
+        if (!error && result.data) destinationHouseholdId = result.data;
         break;
       }
       case "complete": {
         const result = await supabase.rpc("complete_household_onboarding", { p_household_id: value.householdId, p_first_name: value.firstName, p_last_name: value.lastName });
         error = result.error;
-        if (!error && result.data) destination = `/households/${result.data}`;
+        if (!error && result.data) destinationHouseholdId = result.data;
         break;
       }
       case "accept": {
@@ -67,7 +70,7 @@ export async function householdAction(input: unknown): Promise<HouseholdResult> 
         const result = await supabase.rpc("accept_invitation", { p_kind: "household", p_token_hash: hash, p_first_name: value.firstName, p_last_name: value.lastName });
         const outcome = invitationResult(result.data);
         if (result.error || outcome.status !== "ok" || outcome.destination_kind !== "household" || !outcome.destination_id) return { ok: false, message: result.error || outcome.status === "ok" ? "Unable to check this invitation. Please try again." : invitationMessage(outcome) };
-        store.delete(inviteCookie); destination = `/households/${outcome.destination_id}`;
+        store.delete(inviteCookie); destinationHouseholdId = outcome.destination_id;
         break;
       }
       case "invite": {
@@ -105,9 +108,10 @@ export async function householdAction(input: unknown): Promise<HouseholdResult> 
     if (error?.code === "23514" && value.command === "participant") return { ok: false, message: "Account-linked participants must stay Adult. Remove future driving offers before changing another adult to Child." };
     if (error && value.command === "accept" && error.code === "22023") return { ok: false, message: "This invitation cannot be accepted. Sign in with the invited email, or ask the Owner for a fresh link." };
     if (error) return failure(error.code);
+    if (destinationHouseholdId) destination = await householdUrlForId(supabase, destinationHouseholdId) ?? householdLinkRecoveryPath;
     if (!error && (value.command === "create" || value.command === "complete") && (await cookies()).get(groupInviteCookie)) destination = "/group-invitations/accept";
     revalidatePath("/account"); revalidatePath("/onboarding");
-    if ("householdId" in value) revalidatePath(`/households/${value.householdId}`);
+    revalidatePath("/households/[householdSlug]", "layout");
     return { ok: true, message: "Saved.", destination, invitationPath, invitationCode };
   } catch { return failure(); }
 }

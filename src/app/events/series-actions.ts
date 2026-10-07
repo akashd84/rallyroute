@@ -1,4 +1,6 @@
 "use server";
+import { groupUrlForId } from "@/lib/groups/urls";
+import { groupLinkRecoveryPath } from "@/lib/groups/paths";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -49,12 +51,17 @@ export async function seriesAction(input: unknown): Promise<HouseholdResult> {
             ? "This series changed. Reload before replacing future occurrences."
             : "Unable to save the series. Check future dates, destination, and group permissions.",
       };
-    revalidatePath(`/groups/${parsed.data.groupId}/events`);
+    const groupUrl = await groupUrlForId(supabase, parsed.data.groupId);
+    revalidatePath("/groups/[slug]/events", "page");
+    revalidatePath("/groups/[slug]/[eventSlug]", "page");
+    revalidatePath("/groups/[slug]/[eventSlug]/recurring", "page");
+    revalidatePath("/groups/[slug]", "page");
+    revalidatePath("/groups");
     return {
       ok: true,
       message:
         "Series saved. Households must configure attendance and rides for the new occurrences.",
-      destination: `/groups/${parsed.data.groupId}/events`,
+      destination: groupUrl ? `${groupUrl}/events?focus=${encodeURIComponent(expanded.occurrences[0].required_arrival_at ?? expanded.occurrences[0].ready_to_depart_at!)}` : groupLinkRecoveryPath,
     };
   } catch {
     return {

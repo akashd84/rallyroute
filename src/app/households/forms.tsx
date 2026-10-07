@@ -1,4 +1,5 @@
 "use client";
+import { householdPath } from "@/lib/households/paths";
 import { useRouter } from "next/navigation";
 import { householdAction } from "./actions";
 import { WorkflowForm } from "@/components/workflow-form";
@@ -10,9 +11,9 @@ export function NameFields({ firstName = "", lastName = "", lastNameRequired = t
   return <><label className="block">First name<input name="firstName" required maxLength={100} defaultValue={firstName ?? ""} className="block w-full rounded border p-2" autoComplete="given-name" /></label>
     <label className="block">Last name<input name="lastName" required={lastNameRequired} maxLength={100} defaultValue={lastName ?? ""} className="block w-full rounded border p-2" autoComplete="family-name" /></label>{!lastNameRequired && <p className="text-sm text-slate-600">Last name is optional for transportation participants.</p>}</>;
 }
-export function HouseholdSelector({ households, selected }: { households: { id: string; display_name: string | null }[]; selected?: string }) {
+export function HouseholdSelector({ households, selected }: { households: { id: string; slug: string; display_name: string | null }[]; selected?: string }) {
   const router = useRouter();
-  return <label className="block my-4">Household<select aria-label="Household" value={selected ?? ""} onChange={event => { if (event.target.value) router.push(`/households/${event.target.value}`); }} className="ml-3 rounded border p-2">
+  return <label className="block my-4">Household<select aria-label="Household" value={selected ?? ""} onChange={event => { if (event.target.value) router.push(householdPath(households.find(h => h.id === event.target.value)!.slug)); }} className="ml-3 rounded border p-2">
     <option value="" disabled>Select a household</option>{households.map(h => <option key={h.id} value={h.id}>{h.display_name ?? "Household"}</option>)}
   </select></label>;
 }

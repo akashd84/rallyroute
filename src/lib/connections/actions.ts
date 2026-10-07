@@ -1,4 +1,6 @@
 "use server";
+import { householdUrlForId } from "@/lib/households/urls";
+import { householdLinkRecoveryPath } from "@/lib/households/paths";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -41,8 +43,9 @@ export async function connectionAction(input: unknown): Promise<HouseholdResult>
     if (outcome.status === "stale") return { ok: false, message: "This suggestion expired or changed. Find matches again." };
     if (outcome.status !== "ok" && outcome.status !== "existing") return { ok: false, message: "This connection or sharing selection is no longer available. Reload to check its current status." };
     revalidatePath("/account");
-    revalidatePath(`/households/${value.householdId}/connections`);
+    revalidatePath("/households/[householdSlug]/connections", "page");
+    const url = value.command === "request" ? await householdUrlForId(client, value.householdId) : null;
     return { ok: true, message: outcome.status === "existing" ? outcome.incoming ? "An incoming request already exists. Open Connections to accept or decline it." : "A connection or outgoing request already exists." : "Saved.",
-      ...(value.command === "request" ? { destination: `/households/${value.householdId}/connections` } : {}) };
+      ...(value.command === "request" ? { destination: url ? `${url}/connections` : householdLinkRecoveryPath } : {}) };
   } catch { return { ok: false, message: "Unable to save this connection. Reload and try again." }; }
 }

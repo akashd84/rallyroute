@@ -9,7 +9,9 @@ Carpool matching within trusted groups. Next.js App Router, TypeScript, Tailwind
 3. Configure Supabase Auth as described in [authentication setup and verification](docs/authentication.md).
 4. Run `pnpm dev` and open your development origin (localhost:3000 for local access).
 
-Routes: `/` chooses the sign-in or account page; `/sign-in` requests and verifies email codes; `/account` validates identity server-side and reads only the caller's profile through RLS. Household onboarding and invite-only groups are available; Google OAuth remains deferred.
+Routes: `/` is authenticated Home (anonymous requests go to sign-in); `/sign-in` requests and verifies email codes; `/account` validates identity server-side and reads only the caller's profile through RLS. Household onboarding and invite-only groups are available; Google OAuth remains deferred.
+
+Frontend work follows the [design-system implementation policy](docs/ux/frontend-design-system.md).
 
 ## Checks
 

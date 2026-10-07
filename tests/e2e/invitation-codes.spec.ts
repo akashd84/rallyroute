@@ -7,7 +7,7 @@ async function login(page: Page, email = "adult@example.com", destination = /\/a
 }
 test.beforeEach(async ({ request }) => { await request.post("http://127.0.0.1:54329/test/reset"); });
 test("mocked: manual household code normalization, copy controls and explicit acceptance", async ({ page, browser }) => {
-  await login(page); await page.getByRole("link", { name: "Example household", exact: true }).click();
+  await login(page); await page.getByRole("link", { name: "Example household", exact: true }).click(); await page.getByRole("link", { name: "Household settings", exact: true }).click();
   await page.getByLabel("Invited email").fill("recipient@example.com"); await page.getByRole("button", { name: "Create invitation", exact: true }).click();
   const code = await page.getByLabel("Invitation code", { exact: true }).inputValue();
   expect(code).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/);
@@ -27,7 +27,7 @@ test("mocked: manual household code normalization, copy controls and explicit ac
 test("mocked: manual group entry reaches guarded preview, throttling preserves context and recovers", async ({ page, request }) => {
   await login(page); await page.goto("/groups/new"); await page.getByRole("combobox", { name: "Household", exact: true }).selectOption({ label: "Example household" });
   await page.getByLabel("Group name").fill("Code club"); await page.getByLabel("Group type").selectOption("club"); await page.getByRole("button", { name: "Create group", exact: true }).click();
-  await expect(page).toHaveURL(/\/groups\/[a-f0-9-]+$/); await page.getByRole("button", { name: "Create reusable link" }).click();
+  await expect(page).toHaveURL(/\/groups\/(?!new$)[a-z0-9-]+$/); await page.getByRole("link", { name: "Share group", exact: true }).click(); await page.getByRole("button", { name: "Create reusable link" }).click();
   const code = await page.getByLabel("Invitation code").inputValue();
   await request.post("http://127.0.0.1:54329/test/budget", { data: { email: "adult@example.com", minuteCount: 10 } });
   await page.goto("/join"); await page.getByRole("combobox", { name: "Invitation type" }).selectOption("group"); await page.getByLabel("Invitation code").fill(code.toLowerCase());
@@ -49,9 +49,32 @@ test("mocked: original long household link remains valid through guarded accepta
 test("mocked: original long group link still previews without automatic redemption", async ({ page, request }) => {
   await login(page); await page.goto("/groups/new"); await page.getByRole("combobox", { name: "Household", exact: true }).selectOption({ label: "Example household" });
   await page.getByLabel("Group name").fill("Legacy club"); await page.getByLabel("Group type").selectOption("club"); await page.getByRole("button", { name: "Create group", exact: true }).click();
-  await expect(page).toHaveURL(/\/groups\/[a-f0-9-]+$/); const groupId = page.url().split("/").at(-1); const token = "e".repeat(64);
-  await request.post("http://127.0.0.1:54329/test/legacy", { data: { kind: "group", groupId, token } });
+  await expect(page).toHaveURL(/\/groups\/(?!new$)[a-z0-9-]+$/); const groupSlug = page.url().split("/").at(-1); const token = "e".repeat(64);
+  await request.post("http://127.0.0.1:54329/test/legacy", { data: { kind: "group", groupSlug, token } });
   await page.goto(`/group-invitations/open#${token}`); await expect(page).toHaveURL(/\/group-invitations\/accept$/);
   expect(page.url()).not.toContain("#"); await expect(page.getByRole("heading", { name: "Legacy club", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Join group" })).toBeVisible();
+});
+
+
+test("mocked: join uses the app shell only for an authenticated session", async ({ page }) => {
+  await page.goto("/join");
+  await expect(page.getByRole("heading", { name: "Join with an invitation code" })).toBeVisible();
+  await expect(page.getByRole("banner")).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toHaveCount(0);
+  await expect(page.getByRole("main")).toHaveCount(1);
+  await login(page);
+  await page.goto("/groups");
+  await page.getByRole("link", { name: "Join By Invite Code", exact: true }).click();
+  await expect(page).toHaveURL(/\/join$/);
+  await expect(page.getByRole("banner")).toContainText("Join");
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
+  await expect(page.getByRole("main")).toHaveCount(1);
+  await expect(page.getByText("You will sign in before accepting.")).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
+  await page.getByRole("banner").getByRole("button", { name: "Sign out", exact: true }).click();
+  await expect(page).toHaveURL(/\/sign-in$/);
+  await page.goto("/join");
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toHaveCount(0);
 });

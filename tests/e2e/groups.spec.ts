@@ -12,17 +12,27 @@ async function createGroup(page: Page, name = "Example club") {
   await page.getByLabel("Group name").fill(name); await page.getByLabel("Group type").selectOption("club");
   await page.getByLabel("Description").fill("A trusted group for shared trips.");
   await page.getByRole("button", { name: "Create group", exact: true }).click();
-  await expect(page).toHaveURL(/\/groups\/[a-f0-9-]+$/);
+  await expect(page).toHaveURL(/\/groups\/(?!new$)[a-z0-9-]+$/);
 }
 async function directLink(page: Page) {
+  await page.getByRole("link", { name: "Invite to group", exact: true }).click();
+  await expect(page).toHaveURL(/\/group\/[^/]+\/invite$/);
+  await expect(page.getByLabel("Household use limit")).toHaveCount(0);
   await page.getByLabel("Invited email").fill("recipient@example.com");
   await page.getByRole("button", { name: "Create direct invitation" }).click();
-  return page.locator("form").filter({ has: page.getByRole("button", { name: "Create direct invitation" }) }).getByLabel("Invitation link").inputValue();
+  const link = await page.locator("form").filter({ has: page.getByRole("button", { name: "Create direct invitation" }) }).getByLabel("Invitation link").inputValue();
+  await page.getByRole("link", { name: /^Back to / }).click();
+  return link;
 }
 async function reusableLink(page: Page, limit = "") {
+  await page.getByRole("link", { name: "Share group", exact: true }).click();
+  await expect(page).toHaveURL(/\/group\/[^/]+\/share$/);
+  await expect(page.getByLabel("Invited email")).toHaveCount(0);
   await page.getByLabel("Household use limit").fill(limit);
   await page.getByRole("button", { name: "Create reusable link" }).click();
-  return page.locator("form").filter({ has: page.getByRole("button", { name: "Create reusable link" }) }).getByLabel("Invitation link").inputValue();
+  const link = await page.locator("form").filter({ has: page.getByRole("button", { name: "Create reusable link" }) }).getByLabel("Invitation link").inputValue();
+  await page.getByRole("link", { name: /^Back to / }).click();
+  return link;
 }
 async function onboard(page: Page, name: string, destination: RegExp) {
   await page.getByRole("link", { name: "Create a household or complete setup" }).click();
@@ -41,10 +51,36 @@ test("mocked: protected creation, error/pending recovery, settings and initial m
   await expect(page.getByRole("button", { name: "Saving…" })).toBeDisabled();
   await expect(page.getByRole("heading", { name: "Slow group", exact: true })).toBeVisible();
   await expect(page.getByText("Your group role: Group Owner")).toBeVisible();
+  const overview = page.getByRole("region", { name: "Group overview", exact: true });
+  await expect(overview.getByText("Group Members", { exact: true })).toBeVisible();
+  await expect(overview.locator("dd").first()).toHaveText("1");
+  await expect(overview.getByText("Active households", { exact: true })).toBeVisible();
+  for (const label of ["Needs Rides", "Driver Available", "Carpools"]) {
+    const metric = overview.locator("dl").filter({ has: page.getByText(label, { exact: true }) });
+    await expect(metric.locator("dd").first()).toHaveText("0");
+  }
+  const headingBox = await page.getByRole("heading", { name: "Slow group", exact: true }).boundingBox();
+  const overviewBox = await overview.boundingBox();
+  const eventsBox = await page.getByRole("region", { name: "Events", exact: true }).boundingBox();
+  expect(overviewBox!.y).toBeGreaterThan(headingBox!.y + headingBox!.height);
+  expect(overviewBox!.y + overviewBox!.height).toBeLessThan(eventsBox!.y);
+
   await expect(page.getByRole("link", { name: "Example household", exact: true })).toBeVisible();
+  const groupUrl = page.url();
+  await expect(page.getByLabel("Group name")).toHaveCount(0);
+  await page.getByRole("link", { name: "Group settings", exact: true }).click();
+  await expect(page).toHaveURL(`${groupUrl}/settings`);
   await page.getByLabel("Group name").fill("Updated group"); await page.getByRole("button", { name: "Save group settings" }).click();
+  await expect(page.getByRole("status")).toContainText("Saved.");
+  await expect(page).toHaveURL(`${groupUrl}/settings`);
+  await page.reload();
+  await expect(page.getByLabel("Group name")).toHaveValue("Updated group");
+  await page.getByRole("link", { name: "Back to Updated group", exact: true }).click();
+  await expect(page).toHaveURL(groupUrl);
   await expect(page.getByRole("heading", { name: "Updated group", exact: true })).toBeVisible();
-  await page.goto("/groups"); await expect(page.getByRole("link", { name: "Updated group" })).toBeVisible();
+  await page.goto("/groups");
+  await expect(page.getByRole("region", { name: "Groups I Manage", exact: true }).getByRole("link", { name: "Updated group" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Groups I'm In", exact: true }).getByRole("link", { name: "Updated group" })).toHaveCount(0);
 });
 test("mocked: direct invitation survives sign-in and onboarding, explicit household join and dashboard restrictions", async ({ page, browser }) => {
   await login(page); await createGroup(page); const groupUrl = page.url(); const link = await directLink(page);
@@ -60,12 +96,26 @@ test("mocked: direct invitation survives sign-in and onboarding, explicit househ
   await recipient.getByRole("combobox", { name: "Household", exact: true }).selectOption({ label: "Recipient home" });
   await recipient.getByRole("button", { name: "Join group" }).click(); await expect(recipient).toHaveURL(groupUrl);
   await expect(recipient.getByText("Your group role: Group Member")).toBeVisible();
+  await expect(recipient.getByRole("region", { name: "Group overview", exact: true }).locator("dd").first()).toHaveText("2");
   await expect(recipient.getByRole("button", { name: "Save group settings" })).toHaveCount(0);
   await expect(recipient.getByLabel("Invited email")).toHaveCount(0);
   await expect(recipient.getByRole("link", { name: "Recipient home", exact: true })).toBeVisible();
   await expect(recipient.getByText("Example household", { exact: true })).toHaveCount(0);
   expect((await context.cookies()).some(c => c.name === "rallyroute-group-invite")).toBe(false);
   await recipient.reload(); await expect(recipient.getByRole("heading", { name: "Example club", exact: true })).toBeVisible();
+  await expect(recipient.getByRole("link", { name: "Group settings", exact: true })).toHaveCount(0);
+  await expect(recipient.getByRole("link", { name: "Invite to group", exact: true })).toHaveCount(0);
+  await expect(recipient.getByRole("link", { name: "Share group", exact: true })).toHaveCount(0);
+  for (const route of ["invite", "share"]) {
+    await recipient.goto(groupUrl.replace("/groups/", "/group/") + `/${route}`);
+    await expect(recipient.getByRole("heading", { name: "This page could not be found." })).toBeVisible();
+  }
+  await recipient.goto(`${groupUrl}/settings`);
+  await expect(recipient.getByRole("button", { name: "Save group settings" })).toHaveCount(0);
+  await expect(recipient.getByRole("heading", { name: "This page could not be found." })).toBeVisible();
+  await recipient.goto("/groups");
+  await expect(recipient.getByRole("region", { name: "Groups I'm In", exact: true }).getByRole("link", { name: "Example club", exact: true })).toHaveAttribute("href", new URL(groupUrl).pathname);
+  await expect(recipient.getByRole("region", { name: "Groups I Manage", exact: true }).getByRole("link")).toHaveCount(0);
   await context.close();
 });
 test("mocked: wrong email preview denial, reusable joining, explicit selection and revocation", async ({ page, browser }) => {
@@ -78,6 +128,7 @@ test("mocked: wrong email preview denial, reusable joining, explicit selection a
   await onboard(outsider, "Outside home", /\/group-invitations\/accept$/);
   await outsider.getByRole("combobox", { name: "Household", exact: true }).selectOption({ label: "Outside home" });
   await outsider.getByRole("button", { name: "Join group" }).click(); await expect(outsider).toHaveURL(page.url());
+  await page.getByRole("link", { name: "Share group", exact: true }).click();
   const row = page.locator("li").filter({ hasText: "Reusable link" });
   page.once("dialog", dialog => dialog.dismiss()); await row.getByRole("button", { name: "Revoke group invitation" }).click();
   await expect(row.getByRole("button", { name: "Revoke group invitation" })).toBeVisible();
@@ -108,11 +159,12 @@ test("mocked: selecting a second household joins only that household", async ({ 
   await page.getByRole("button", { name: "Join group" }).click(); await expect(page).toHaveURL(groupUrl);
   await expect(page.getByRole("link", { name: "Example household", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Second household", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Share group", exact: true }).click();
   await expect(page.locator("li").filter({ hasText: "Reusable link" })).toContainText("1 / unlimited");
 });
 test("mocked: household Members get Owner guidance for group creation and joining", async ({ page, browser }) => {
   await login(page); await createGroup(page); const groupLink = await reusableLink(page);
-  await page.goto("/account"); await page.getByRole("link", { name: "Example household", exact: true }).click();
+  await page.goto("/account"); await page.getByRole("link", { name: "Example household", exact: true }).click(); await page.getByRole("link", { name: "Household settings", exact: true }).click();
   await page.getByLabel("Invited email").fill("recipient@example.com"); await page.getByRole("button", { name: "Create invitation", exact: true }).click();
   const householdLink = await page.getByLabel("Invitation link", { exact: true }).inputValue();
   const context = await browser.newContext(); const recipient = await context.newPage();

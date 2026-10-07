@@ -3,6 +3,7 @@ const m = vi.hoisted(() => ({
   client: vi.fn(),
   user: vi.fn(),
   rpc: vi.fn(),
+  from: vi.fn(),
   refresh: vi.fn(),
 }));
 vi.mock("@/lib/geocoding", () => ({
@@ -39,11 +40,23 @@ const create = {
 };
 beforeEach(() => {
   vi.resetAllMocks();
-  m.client.mockResolvedValue({ auth: { getUser: m.user }, rpc: m.rpc });
+  m.client.mockResolvedValue({ auth: { getUser: m.user }, rpc: m.rpc, from: m.from });
+  m.from.mockImplementation((table: string) => ({ select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: { slug: table === "events" ? "practice" : "club" }, error: null }) }));
   m.user.mockResolvedValue({ data: { user: { id: groupId } }, error: null });
   m.rpc.mockResolvedValue({ data: eventId, error: null });
 });
 describe("event Server Actions", () => {
+  it("keeps a successful event save recoverable if its group URL cannot be resolved", async () => {
+    m.from.mockReturnValue({ select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }) });
+    expect(await eventAction(create)).toMatchObject({ ok: true, destination: "/groups?notice=group-link" });
+    expect(m.rpc).toHaveBeenCalledTimes(1);
+  });
+  it("resolves the series destination from the internal group UUID", async () => {
+    const result = await seriesAction({ groupId, requestId: eventId, name: "Practice", locationId: householdId,
+      spec: { frequency: "daily", startDate: "2099-01-01", endDate: "2099-01-02", timezone: "UTC", arrivalTime: "09:00" } });
+    expect(result).toMatchObject({ ok: true, destination: "/groups/club/events?focus=2099-01-01T09%3A00%3A00Z" });
+    expect(m.rpc.mock.calls[0][1].p_data.groupId).toBe(groupId);
+  });
   it.each([
     { ...create, name: "" },
     { ...create, timezoneConfirmed: "" },
@@ -83,7 +96,7 @@ describe("event Server Actions", () => {
   it("converts wall times and preserves the request UUID", async () => {
     expect(await eventAction(create)).toMatchObject({
       ok: true,
-      destination: `/groups/${groupId}/events/${eventId}`,
+      destination: "/groups/club/practice",
     });
     expect(m.rpc.mock.calls[0][1].p_data).toMatchObject({
       requestId: eventId,

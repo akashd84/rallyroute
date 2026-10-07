@@ -1,4 +1,6 @@
 "use server";
+import { groupUrlForId } from "@/lib/groups/urls";
+import { groupLinkRecoveryPath } from "@/lib/groups/paths";
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -43,7 +45,7 @@ export async function groupAction(input: unknown): Promise<HouseholdResult> {
       case "create": {
         const result = await supabase.rpc("create_group_once", { p_household_id: value.householdId, p_name: value.name, p_group_type: value.groupType, p_description: value.description, p_request_id: value.requestId });
         error = result.error;
-        if (!error && result.data) destination = `/groups/${result.data}`;
+        if (!error && result.data) destination = await groupUrlForId(supabase, result.data) ?? groupLinkRecoveryPath;
         break;
       }
       case "settings": {
@@ -70,14 +72,18 @@ export async function groupAction(input: unknown): Promise<HouseholdResult> {
         const result = await supabase.rpc("accept_invitation", { p_kind: "group", p_token_hash: hash, p_household_id: value.householdId });
         const outcome = invitationResult(result.data);
         if (result.error || outcome.status !== "ok" || outcome.destination_kind !== "group" || !outcome.destination_id) return { ok: false, message: result.error || outcome.status === "ok" ? "Unable to check this invitation. Please try again." : invitationMessage(outcome) };
-        store.delete(groupInviteCookie); destination = `/groups/${outcome.destination_id}`;
+        store.delete(groupInviteCookie); destination = await groupUrlForId(supabase, outcome.destination_id) ?? groupLinkRecoveryPath;
         break;
       }
     }
     if (error) return failed(error.code, value.command === "join");
     revalidatePath("/account"); revalidatePath("/groups");
-    if ("groupId" in value) revalidatePath(`/groups/${value.groupId}`);
-    if ("householdId" in value) revalidatePath(`/households/${value.householdId}`);
+    if ("groupId" in value) {
+      revalidatePath("/groups/[slug]", "layout");
+      revalidatePath("/group/[slug]/invite", "page");
+      revalidatePath("/group/[slug]/share", "page");
+    }
+    if ("householdId" in value) revalidatePath("/households/[householdSlug]", "layout");
     return { ok: true, message: "Saved.", destination, invitationPath, invitationCode };
   } catch { return failed(undefined, value.command === "join"); }
 }

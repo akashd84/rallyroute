@@ -8,7 +8,7 @@ After email-code sign-in, `/account` checks the current profile, active househol
 
 Creating a household requires first name, last name, and household name. One transaction creates Owner access, a linked Adult participant, and the onboarding completion timestamp. A request UUID prevents duplicate households on retries. Existing account holders can complete names/linkage in their existing household without creating another household. Additional adults and children do not need accounts; their last names are optional.
 
-`/households/[id]` provides a household selector, participant management, and settings/access controls. Participant names are transportation data and can differ from account profile names. Removing participants archives them; ordinary clients cannot hard-delete them, change household assignment, or assign account linkage. Account-linked participants must remain active Adults. An unlinked Adult with future driving offers cannot become a Child until those offers are removed.
+`/households/[householdSlug]` provides a household selector, participant cards, and saved addresses. Settings, invitations, account access, and leaving the household live at `/households/[householdSlug]/settings`, linked from the household overview. Participant names are transportation data and can differ from account profile names. Removing participants archives them; ordinary clients cannot hard-delete them, change household assignment, or assign account linkage. Account-linked participants must remain active Adults. An unlinked Adult with future driving offers cannot become a Child until those offers are removed.
 
 ## Permissions and ownership
 
@@ -89,3 +89,49 @@ Also run `pnpm supabase db lint --linked --schema public,private`. Apply schema 
 6. Verify a revoked or consumed invitation fails without adding access. Use a third/wrong signed-in account only if available; database tests already cover forged/mismatched email claims.
 7. As A, leave last. Confirm onboarding is offered and the former household URL is unavailable. No accounts are deleted.
 8. Record actual outcomes/errors without sharing OTP codes or invitation links. Review preserved records through controlled database inspection if required; archived-household restoration is not available.
+
+
+Household URLs use globally unique, automatically generated slugs (maximum 80
+ASCII characters). Existing households are backfilled by creation time then UUID.
+Names normalize to lowercase words separated by hyphens; blank/non-ASCII-only
+names fall back to `household`. Reserved `new` and UUID-shaped names are prefixed.
+Duplicates receive an eight-character random hexadecimal suffix. The database
+prevents slug edits, including after renaming. Creation retains UUID returns,
+owner access, request idempotency, and slug-specific collision retries.
+
+Household pages and all locations, connections, and carpool routes resolve slugs
+through the authenticated client and existing RLS. Unknown, inaccessible,
+archived, malformed, and old UUID paths return 404s; signed-out visitors still
+sign in first. Forms, household selection cookies, invitation redemption, and
+relationships retain UUIDs. Successful UUID-returning operations resolve the
+accessible slug before redirecting; lookup failure recovers at the account page
+with feedback. Apply the database migration before deploying these routes.
+
+Verification: `pnpm test:db:linked household_slugs.test.sql` and
+`node scripts/test-household-slug-concurrency.mjs` use linked Dev. The latter
+creates disposable synthetic identities and removes them after exercising
+parallel household creation and request retries.
+
+Saved address cards appear on the household overview and `/locations`. Owners
+add addresses at `/households/<householdslug>/locations/add` and edit them at
+`/households/<householdslug>/locations/<locationslug>/edit`. Members see read-only
+cards. Slugs live in `private.household_locations`, are generated from the initial
+label, remain stable after label/address edits, and are unique within a household
+only. Same-household duplicate labels receive random suffixes; different
+households can reuse the same slug. `add` and UUID-shaped labels are prefixed.
+The existing household-authorized list RPC projects slugs along with saved
+address details; precise coordinates remain private. Edit routes resolve the
+household first, then a location within its authorized projection, and continue
+to save through UUIDs, revision checks, server-side geocoding authorization, and
+ride reconfirmation workflows.
+
+Owners can choose a primary/default address from saved-address cards. The
+controlled `set_household_primary_location` RPC locks the household, validates an
+active address in that household, clears the previous primary, and selects the
+new one in one transaction. The existing unique index enforces at most one
+primary per household. Archiving a primary clears it; no replacement is selected
+automatically. The private projection exposes `is_primary` only to household
+members. New ride preference forms preselect this address; existing preferences
+retain their saved choice. Changing the default does not alter address revisions,
+invalidate rides, or revoke consented pickup sharing. Address/revision changes
+continue to revoke sharing under the existing lifecycle checks.

@@ -28,7 +28,7 @@ async function sendRequest(page: Page) {
 }
 test("mocked: mutual consent, safe contacts, separate pickup sharing and disconnection", async ({ page, browser }) => {
   await sendRequest(page);
-  const other = await recipient(browser, "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+  const other = await recipient(browser, "compatible-household");
   try {
     await expect(other.page.getByText("adult@example.com", { exact: true })).toHaveCount(0);
     await expect(other.page.getByText(/Private test address/)).toHaveCount(0);
@@ -53,20 +53,20 @@ test("mocked: mutual consent, safe contacts, separate pickup sharing and disconn
   } finally { await other.context.close(); }
 });
 test("mocked: decline and withdraw preserve history without revealing contacts", async ({ page, browser }) => {
-  await sendRequest(page); const other = await recipient(browser, "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+  await sendRequest(page); const other = await recipient(browser, "compatible-household");
   try { await other.page.getByRole("button", { name: "Decline request" }).click(); await expect(other.page.getByText("Status: declined")).toBeVisible(); await expect(other.page.getByRole("link", { name: "adult@example.com" })).toHaveCount(0); }
   finally { await other.context.close(); }
-  await page.goto("/groups/44444444-4444-4444-8444-444444444444/events/55555555-5555-4555-8555-555555555555?household=33333333-3333-4333-8333-333333333333");
+  await page.goto("/groups/match-club/match-event?household=33333333-3333-4333-8333-333333333333");
   await sendRequest(page); await page.getByRole("button", { name: "Withdraw request" }).click();
   await expect(page.getByText("Status: withdrawn")).toBeVisible();
 });
 test("mocked: expiry and household selection clear actionable requests", async ({ page, request }) => {
   await sendRequest(page);
   await page.getByRole("navigation", { name: "Choose household" }).getByRole("link", { name: "Other own household" }).click();
-  await expect(page).toHaveURL(/77777777-7777-4777-8777-777777777777\/connections$/);
+  await expect(page).toHaveURL(/other-own-household\/connections$/);
   await expect(page.getByRole("button", { name: "Withdraw request" })).toHaveCount(0);
   await page.getByRole("navigation", { name: "Choose household" }).getByRole("link", { name: "Example household" }).click();
-  await expect(page).toHaveURL(/33333333-3333-4333-8333-333333333333\/connections$/);
+  await expect(page).toHaveURL(/example-household\/connections$/);
   await request.post("http://127.0.0.1:54329/test/connections", { data: { expire: true } }); await page.reload();
   await expect(page.getByText("Status: expired")).toBeVisible(); await expect(page.getByRole("button", { name: "Withdraw request" })).toHaveCount(0);
 });

@@ -55,6 +55,12 @@ The codebase must remain portable between Rocket and Vercel. Do not introduce Ro
 
 ---
 
+## Frontend Implementation Policy
+
+For frontend work, follow [the frontend design-system implementation policy](docs/ux/frontend-design-system.md). It defines component and dependency selection, canonical Lucide icons, styling, accessibility, and verification. Preserve existing screens and architecture; adopt standards incrementally from approved FigJam/Figma UX.
+
+---
+
 ## Package Manager
 
 Use `pnpm`.

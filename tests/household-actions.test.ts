@@ -14,6 +14,7 @@ beforeEach(() => {
   mocks.client.mockResolvedValue({ auth: { getUser: mocks.getUser }, rpc: mocks.rpc, from: mocks.from });
   mocks.getUser.mockResolvedValue({ data: { user: { id: userId } }, error: null });
   mocks.rpc.mockImplementation(async (name: string) => ({ data: name === "accept_invitation" ? { status: "ok", destination_kind: "household", destination_id: householdId } : householdId, error: null }));
+  mocks.from.mockReturnValue({ select: () => ({ eq: () => ({ is: () => ({ maybeSingle: async () => ({ data: { slug: "example-household" }, error: null }) }) }) }) });
   mocks.getCookie.mockImplementation((name: string) => name === "rallyroute-household-invite" ? { value: "a".repeat(64) } : undefined);
 });
 describe("household actions", () => {
@@ -35,7 +36,7 @@ describe("household actions", () => {
   });
   it("uses the supplied idempotency identifier and normalized names", async () => {
     const input = { command: "create", firstName: " Alex ", lastName: " Example ", displayName: " Home ", requestId: userId };
-    expect(await householdAction(input)).toMatchObject({ ok: true, destination: `/households/${householdId}` });
+    expect(await householdAction(input)).toMatchObject({ ok: true, destination: "/households/example-household" });
     expect(mocks.rpc).toHaveBeenCalledWith("onboard_household", { p_first_name: "Alex", p_last_name: "Example", p_display_name: "Home", p_request_id: userId });
   });
   it("only sends a hash to the invitation RPC", async () => {
@@ -56,7 +57,7 @@ describe("household actions", () => {
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it("accepts explicitly and clears invitation context only on success", async () => {
-    expect(await householdAction({ command: "accept", ...names })).toMatchObject({ ok: true, destination: `/households/${householdId}` });
+    expect(await householdAction({ command: "accept", ...names })).toMatchObject({ ok: true, destination: "/households/example-household" });
     expect(mocks.rpc).toHaveBeenCalledWith("accept_invitation", { p_kind: "household", p_token_hash: "a".repeat(64), p_first_name: "Alex", p_last_name: "Example" });
     expect(mocks.deleteCookie).toHaveBeenCalledOnce();
   });
@@ -119,4 +120,9 @@ it("resumes a pending group invitation after household creation", async () => {
 it("a household invitation replaces pending group context", async () => {
   await captureHouseholdInvitation("a".repeat(64));
   expect(mocks.deleteCookie).toHaveBeenCalledWith("rallyroute-group-invite");
+});
+
+it("recovers a successful creation when its accessible slug cannot be loaded", async () => {
+  mocks.from.mockReturnValue({ select: () => ({ eq: () => ({ is: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }) }) });
+  expect(await householdAction({ command: "create", ...names, displayName: "Home", requestId: userId })).toMatchObject({ ok: true, destination: "/account?notice=household-link" });
 });

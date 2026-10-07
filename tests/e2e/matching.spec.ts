@@ -15,7 +15,7 @@ test("mocked: explicit discovery, both legs, own participants, household selecti
   await expect(panel.getByRole("heading",{name:"Compatible household"})).toHaveCount(1);
   await expect(panel.getByText("Alex: Your household drives")).toBeVisible();await expect(panel.getByText("Taylor: Other household drives")).toBeVisible();await expect(panel.getByText(/Arrival windows overlap/)).toHaveCount(2);
   const outbound=page.getByRole("region",{name:"From event matches",exact:true});await outbound.getByRole("button",{name:"Find matches",exact:true}).click();await expect(outbound.getByText(/Departure windows overlap/)).toHaveCount(2);
-  await page.getByRole("combobox",{name:"Household",exact:true}).selectOption({label:"Other own household"});await page.getByRole("button",{name:"Show household"}).click();await expect(page.getByRole("heading",{name:"Compatible household"})).toHaveCount(0);await expect(page.getByText(/Mark a participant as going/)).toHaveCount(2);
+  await page.getByRole("combobox",{name:"Current household",exact:true}).selectOption({label:"Other own household"});await expect(page.getByText("Household: Other own household",{exact:true})).toBeVisible();await expect(page.getByRole("heading",{name:"Compatible household"})).toHaveCount(0);
 });
 test("mocked: partial batches accumulate and final results become complete",async({page,request})=>{
   await request.post("http://127.0.0.1:54329/test/matching",{data:{mode:"more"}});await page.reload();const panel=page.getByRole("region",{name:"To event matches",exact:true});
